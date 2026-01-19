@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Team Play App</title>
+    <title>TeamPlay - PC Club</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.1/firebase-database-compat.js"></script>
@@ -16,81 +16,92 @@
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .balance-box { background: var(--card); padding: 8px 15px; border-radius: 10px; color: var(--accent); font-weight: bold; border: 1px solid rgba(128,128,128,0.2); }
         .card { background: var(--card); border-radius: 16px; padding: 15px; border: 1px solid rgba(128,128,128,0.2); margin-bottom: 15px; }
-        .btn-play { background: var(--accent); border: none; padding: 12px; border-radius: 10px; font-weight: bold; width: 100%; color: white; cursor: pointer; transition: 0.2s; }
+        .btn-play { background: #d1d5db; border: none; padding: 12px; border-radius: 10px; font-weight: bold; width: 100%; color: #111827; cursor: pointer; transition: 0.2s; }
 
-        /* РУЛЕТКА */
-        .roulette-container { position: relative; width: 100%; height: 120px; background: #000; border-radius: 12px; overflow: hidden; margin: 15px 0; border: 2px solid var(--accent); display: none; }
-        .roulette-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #ff0000; z-index: 10; box-shadow: 0 0 10px red; }
-        .roulette-tape { display: flex; position: absolute; left: 0; top: 0; height: 100%; transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1); will-change: transform; }
-        .prize-item { min-width: 100px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 1px solid #333; background: #1c2127; font-size: 14px; text-align: center; padding: 5px; }
-        .prize-item b { font-size: 18px; display: block; margin-bottom: 3px; }
+        /* КЕЙС */
+        .case-card { background: linear-gradient(135deg, #1e1b4b, #312e81); text-align: center; border: 1px solid #4338ca; }
+        .roulette-container { position: relative; width: 100%; height: 110px; background: #000; border-radius: 12px; overflow: hidden; margin: 15px 0; border: 2px solid #00d1ff; display: none; }
+        .roulette-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #ff0000; z-index: 10; }
+        .roulette-tape { display: flex; position: absolute; left: 0; top: 0; height: 100%; transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1); }
+        .prize-item { min-width: 100px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 1px solid #222; background: #111; font-size: 13px; color: #ccc; }
+        
+        /* ИНВЕНТАРЬ В ПРОФИЛЕ */
+        .inventory-list { margin-top: 15px; text-align: left; }
+        .inventory-item { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
+        .inventory-item small { opacity: 0.5; font-size: 10px; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 1000; padding: 20px; flex-direction: column; overflow-y: auto; }
         .modal.active { display: flex; }
-        input, select { width: 100%; padding: 12px; background: var(--card); border: 1px solid rgba(128,128,128,0.3); color: var(--text); border-radius: 10px; box-sizing: border-box; }
-        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--nav-bg); display: flex; justify-content: space-around; padding: 15px; border-top: 1px solid rgba(128,128,128,0.2); backdrop-filter: blur(10px); }
-        .nav-item { color: #6b7280; font-size: 10px; text-align: center; cursor: pointer; }
+        input, select { width: 100%; padding: 12px; background: var(--card); border: 1px solid rgba(128,128,128,0.3); color: var(--text); border-radius: 10px; box-sizing: border-box; margin-bottom: 10px; }
+        
+        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--nav-bg); display: flex; justify-content: space-around; padding: 12px; border-top: 1px solid rgba(128,128,128,0.1); backdrop-filter: blur(10px); }
+        .nav-item { color: #4b5563; font-size: 10px; text-align: center; cursor: pointer; }
         .nav-item.active { color: var(--accent); }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div id="username">Загрузка...</div>
-        <div class="balance-box" id="balance">0 ⭐</div>
+        <div id="username" style="font-weight: 500; opacity: 0.8;">Загрузка...</div>
+        <div class="balance-box"><span id="balance">0</span> ⭐</div>
     </div>
 
     <div id="section-main">
-        <div class="card" style="text-align: center; background: linear-gradient(135deg, #1e1b4b, #312e81);">
+        <div class="card case-card">
             <b style="font-size: 18px;">🎁 Кейс Привилегий</b><br>
-            <small>Стоимость: 1000 ⭐</small>
+            <small style="opacity: 0.7;">Открой и получи бонусы для клуба!</small>
             
             <div class="roulette-container" id="roulette">
                 <div class="roulette-line"></div>
                 <div class="roulette-tape" id="tape"></div>
             </div>
 
-            <button id="btn-open-case" class="btn-play" style="background:white; color:black; margin-top:10px" onclick="spinCase()">ОТКРЫТЬ ЗА 1000 ⭐</button>
+            <button id="btn-open-case" class="btn-play" style="margin-top:15px; background: #fff; color: #000;" onclick="spinCase()">ОТКРЫТЬ ЗА 1000 ⭐</button>
+        </div>
+
+        <div class="card" style="opacity: 0.8; background: #1c2127;">
+            <b>Игра Mines 💣</b><br><small>В разработке...</small>
+        </div>
+    </div>
+
+    <div id="modal-profile" class="modal">
+        <div style="display:flex; justify-content: space-between; align-items: center;">
+            <h2>Профиль ⚙️</h2>
+            <button onclick="closeModals()" style="background:none; border:none; color:var(--accent); font-size:20px;">✕</button>
         </div>
         
-        <div class="card" onclick="startMines()">
-            <b>Игра Mines 💣</b><br><small>Ставка 20 ⭐</small>
+        <label>Имя пользователя:</label>
+        <input type="text" id="edit-name">
+        
+        <label>Тема приложения:</label>
+        <select id="edit-theme" onchange="applyTheme(this.value)">
+            <option value="dark">Тёмная</option>
+            <option value="light">Светлая</option>
+        </select>
+        
+        <button class="btn-play" style="background:var(--accent); color:white" onclick="saveProfile()">СОХРАНИТЬ</button>
+
+        <h3 style="margin-top:25px; border-bottom: 1px solid rgba(128,128,128,0.2); padding-bottom: 10px;">🎒 Мои награды</h3>
+        <div id="inventory-container" class="inventory-list">
+            <div style="opacity:0.5; text-align:center;">У вас пока нет наград</div>
         </div>
-        <div id="mines-board" style="display:none; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;"></div>
     </div>
 
     <div id="modal-promo" class="modal">
         <h2>Промокоды 🎫</h2>
         <input type="text" id="promo-input" placeholder="Введите код...">
-        <button class="btn-play" style="margin-top:15px" onclick="usePromo()">АКТИВИРОВАТЬ</button>
-        <button class="btn-play" style="background:none; border:1px solid gray; margin-top:10px" onclick="closeModals()">НАЗАД</button>
-    </div>
-
-    <div id="modal-bonus" class="modal">
-        <h2>Бонусы 🏆</h2>
-        <div class="card" onclick="doTask(300, this)"><b>Подписка</b><br><small>+300 ⭐</small></div>
-        <button class="btn-play" style="background:none; border:1px solid gray" onclick="closeModals()">НАЗАД</button>
-    </div>
-
-    <div id="modal-profile" class="modal">
-        <h2>Профиль ⚙️</h2>
-        <label>Имя:</label><input type="text" id="edit-name"><br>
-        <label>Тема:</label>
-        <select id="edit-theme" onchange="applyTheme(this.value)">
-            <option value="dark">Тёмная</option>
-            <option value="light">Светлая</option>
-        </select>
-        <button class="btn-play" style="margin-top:20px" onclick="saveProfile()">СОХРАНИТЬ</button>
+        <button class="btn-play" style="margin-top:10px; background:var(--accent); color:white" onclick="usePromo()">АКТИВИРОВАТЬ</button>
+        <button class="btn-play" style="background:none; border:1px solid gray; margin-top:10px; color:var(--text)" onclick="closeModals()">ЗАКРЫТЬ</button>
     </div>
 
     <div class="nav">
-        <div class="nav-item active" onclick="closeModals()">🏠<br>Главная</div>
+        <div class="nav-item active" id="nav-home" onclick="closeModals()">🏠<br>Главная</div>
         <div class="nav-item" onclick="openModal('modal-promo')">🎫<br>Промо</div>
-        <div class="nav-item" onclick="openModal('modal-bonus')">🎁<br>Бонусы</div>
         <div class="nav-item" onclick="openModal('modal-profile')">⚙️<br>Профиль</div>
     </div>
 
     <script>
+        // Данные Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBPx6V-_sE6k1_hnOkCvR8E1wOlsabVMbc",
             authDomain: "teamplay-9f75a.firebaseapp.com",
@@ -109,42 +120,44 @@
         const userId = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "test_user";
         const userRef = db.ref('users/' + userId);
 
+        // Синхронизация данных
         userRef.on('value', (snap) => {
             const data = snap.val();
             if (data) {
-                document.getElementById('balance').innerText = data.balance + " ⭐";
-                document.getElementById('username').innerText = data.name;
+                document.getElementById('balance').innerText = data.balance || 0;
+                document.getElementById('username').innerText = data.name || "Игрок";
+                document.getElementById('edit-name').value = data.name || "";
                 applyTheme(data.theme);
+                updateInventoryUI(data.inventory);
             }
         });
 
-        // ПУЛ ПРИЗОВ С ШАНСАМИ
+        // Шансы выпадения
         const prizes = [
-            { t: "1ч STANDART", i: "🥉", w: 10, type: "priv" },
-            { t: "1ч VIP", i: "🥈", w: 6, type: "priv" },
-            { t: "3ч STANDART", i: "🥉", w: 4, type: "priv" },
-            { t: "3ч VIP", i: "🥈", w: 3, type: "priv" },
-            { t: "6ч STANDART", i: "🥉", w: 2, type: "priv" },
-            { t: "6ч VIP", i: "🥈", w: 1, type: "priv" },
-            { t: "ПС 4 - 1ч", i: "🎮", w: 20, type: "priv" },
-            { t: "ПС 5 - 1ч", i: "🚀", w: 10, type: "priv" },
-            { t: "500 ⭐", i: "⭐", w: 44, type: "coin", val: 500 } // Остальной шанс на утешительный приз
+            { t: "1ч STANDART", i: "🥉", w: 10 },
+            { t: "1ч VIP", i: "🥈", w: 6 },
+            { t: "3ч STANDART", i: "🥉", w: 4 },
+            { t: "3ч VIP", i: "🥈", w: 3 },
+            { t: "6ч STANDART", i: "🥉", w: 2 },
+            { t: "6ч VIP", i: "🥈", w: 1 },
+            { t: "ПС 4 - 1ч", i: "🎮", w: 20 },
+            { t: "ПС 5 - 1ч", i: "🚀", w: 10 },
+            { t: "500 ⭐", i: "⭐", w: 44, coin: 500 }
         ];
 
         function getRandomPrize() {
-            let totalWeight = prizes.reduce((acc, p) => acc + p.w, 0);
-            let rnd = Math.random() * totalWeight;
+            let total = prizes.reduce((acc, p) => acc + p.w, 0);
+            let rnd = Math.random() * total;
             for (let p of prizes) {
                 if (rnd < p.w) return p;
                 rnd -= p.w;
             }
-            return prizes[0];
         }
 
         function spinCase() {
             userRef.get().then(s => {
                 let bal = s.val().balance || 0;
-                if (bal < 1000) return tg.showAlert("Недостаточно звезд!");
+                if (bal < 1000) return tg.showAlert("Недостаточно ⭐ для открытия!");
 
                 userRef.update({ balance: bal - 1000 });
                 document.getElementById('btn-open-case').disabled = true;
@@ -152,89 +165,3 @@
                 const roulette = document.getElementById('roulette');
                 const tape = document.getElementById('tape');
                 roulette.style.display = 'block';
-                tape.style.transition = 'none';
-                tape.style.transform = 'translateX(0)';
-                
-                let tapeHTML = '';
-                for(let i=0; i<50; i++) {
-                    let p = prizes[Math.floor(Math.random()*prizes.length)];
-                    tapeHTML += `<div class="prize-item"><b>${p.i}</b>${p.t}</div>`;
-                }
-                tape.innerHTML = tapeHTML;
-
-                const winIdx = 45;
-                const winPrize = getRandomPrize();
-                tape.children[winIdx].innerHTML = `<b style="color:gold">${winPrize.i}</b>${winPrize.t}`;
-
-                setTimeout(() => {
-                    tape.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)';
-                    const itemWidth = 100;
-                    const offset = (winIdx * itemWidth) - (roulette.offsetWidth / 2) + (itemWidth / 2);
-                    tape.style.transform = `translateX(-${offset}px)`;
-                }, 50);
-
-                setTimeout(() => {
-                    tg.HapticFeedback.notificationOccurred('success');
-                    tg.showAlert(`ВЫИГРЫШ: ${winPrize.t}!`);
-                    
-                    if(winPrize.type === "coin") {
-                        userRef.update({ balance: (bal - 1000) + winPrize.val });
-                    } else {
-                        // Записываем привилегию в историю пользователя
-                        const newPrivRef = userRef.child('inventory').push();
-                        newPrivRef.set({ title: winPrize.t, date: Date.now() });
-                    }
-                    document.getElementById('btn-open-case').disabled = false;
-                }, 4200);
-            });
-        }
-
-        function openModal(id) { closeModals(); document.getElementById(id).classList.add('active'); }
-        function closeModals() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); }
-        function applyTheme(theme) {
-            if (theme === 'light') document.body.classList.add('light-theme');
-            else document.body.classList.remove('light-theme');
-        }
-        function saveProfile() {
-            const name = document.getElementById('edit-name').value;
-            const theme = document.getElementById('edit-theme').value;
-            userRef.update({ name, theme }).then(() => { tg.showAlert("Сохранено!"); closeModals(); });
-        }
-        function usePromo() {
-            const code = document.getElementById('promo-input').value.toUpperCase();
-            if (code === "TEAM2024") {
-                userRef.get().then(s => {
-                    userRef.update({ balance: (s.val().balance || 0) + 500 });
-                    tg.showAlert("Успешно! +500 ⭐");
-                });
-            } else { tg.showAlert("Код не найден"); }
-        }
-        function startMines() {
-            userRef.get().then(s => {
-                let bal = s.val().balance || 0;
-                if (bal < 20) return tg.showAlert("Мало звезд!");
-                userRef.update({ balance: bal - 20 });
-                let bomb = Math.floor(Math.random() * 9);
-                const board = document.getElementById('mines-board');
-                board.innerHTML = ''; board.style.display = 'grid';
-                for (let i = 0; i < 9; i++) {
-                    const cell = document.createElement('div');
-                    cell.style = "background:rgba(128,128,128,0.2); padding:20px; border-radius:10px; text-align:center";
-                    cell.innerText = "❓";
-                    cell.onclick = () => {
-                        if (i === bomb) {
-                            cell.innerText = "💣"; cell.style.background = "red";
-                            setTimeout(() => { board.style.display = 'none'; tg.showAlert("Взрыв!"); }, 500);
-                        } else {
-                            cell.innerText = "💎"; cell.style.background = "green";
-                            userRef.get().then(sn => userRef.update({ balance: (sn.val().balance || 0) + 10 }));
-                        }
-                        cell.onclick = null;
-                    };
-                    board.appendChild(cell);
-                }
-            });
-        }
-    </script>
-</body>
-</html>
