@@ -48,9 +48,8 @@
     </div>
 
     <script>
-        // --- СЮДА ВСТАВЬ СВОИ ДАННЫЕ ИЗ FIREBASE ---
         const firebaseConfig = {
-            apiKey: "AIzaSyBPx6V-_sE6k1_hn0kCvR8E1wOlsabVMbc",
+            apiKey: "AIzaSyBPx6V-_sE6k1_hnOkCvR8E1wOlsabVMbc",
             authDomain: "teamplay-9f75a.firebaseapp.com",
             databaseURL: "https://teamplay-9f75a-default-rtdb.europe-west1.firebasedatabase.app/",
             projectId: "teamplay-9f75a",
@@ -58,12 +57,16 @@
             messagingSenderId: "975773372092",
             appId: "1:975773372092:web:0a67ef446f6c8444318ab9"
         };
-        // ------------------------------------------
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
         tg.expand();
+
+        // Проверка подключения (выведет в консоль)
+        db.ref(".info/connected").on("value", (snap) => {
+            console.log(snap.val() === true ? "Связь с базой есть" : "Связи нет");
+        });
 
         const user = tg.initDataUnsafe.user;
         const userId = user ? user.id : "test_user";
@@ -71,32 +74,26 @@
 
         const userRef = db.ref('users/' + userId);
 
-        // Следим за балансом в реальном времени
+        // Получаем баланс
         userRef.on('value', (snap) => {
             const data = snap.val();
             if (!data) {
-                // Если зашел первый раз — дарим 100 звезд
                 userRef.set({ name: user ? user.first_name : "Игрок", balance: 100 });
             } else {
                 document.getElementById('balance').innerText = data.balance + " ⭐";
             }
+        }, (error) => {
+            alert("Ошибка базы: " + error.message);
         });
 
-        // Функция открытия кейса
         function openCase() {
             userRef.get().then((snap) => {
                 let bal = snap.val().balance;
-                if (bal < 10) {
-                    tg.showAlert("У вас недостаточно звёзд!");
-                    return;
-                }
-
-                let win = Math.floor(Math.random() * 30); // Выигрыш 0-30 звезд
-                let newBal = bal - 10 + win;
-                
-                userRef.update({ balance: newBal });
+                if (bal < 10) return tg.showAlert("Мало звезд!");
+                let win = Math.floor(Math.random() * 30);
+                userRef.update({ balance: bal - 10 + win });
                 tg.HapticFeedback.impactOccurred('heavy');
-                tg.showAlert(📦 Кейс открыт!\nВы потратили 10 ⭐\nВыпало: ${win} ⭐);
+                tg.showAlert(`Выпало: ${win} ⭐`);
             });
         }
     </script>
