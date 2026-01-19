@@ -16,19 +16,14 @@
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .balance-box { background: var(--card); padding: 8px 15px; border-radius: 10px; color: var(--accent); font-weight: bold; border: 1px solid rgba(128,128,128,0.2); }
         .card { background: var(--card); border-radius: 16px; padding: 15px; border: 1px solid rgba(128,128,128,0.2); margin-bottom: 15px; }
-        .btn-play { background: #d1d5db; border: none; padding: 12px; border-radius: 10px; font-weight: bold; width: 100%; color: #111827; cursor: pointer; transition: 0.2s; }
+        .btn-play { background: #ffffff; border: none; padding: 12px; border-radius: 10px; font-weight: bold; width: 100%; color: #000; cursor: pointer; }
 
-        /* КЕЙС */
-        .case-card { background: linear-gradient(135deg, #1e1b4b, #312e81); text-align: center; border: 1px solid #4338ca; }
+        /* КЕЙС ПРИВИЛЕГИЙ */
+        .case-card { background: linear-gradient(135deg, #1e1b4b, #312e81); text-align: center; }
         .roulette-container { position: relative; width: 100%; height: 110px; background: #000; border-radius: 12px; overflow: hidden; margin: 15px 0; border: 2px solid #00d1ff; display: none; }
         .roulette-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #ff0000; z-index: 10; }
         .roulette-tape { display: flex; position: absolute; left: 0; top: 0; height: 100%; transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1); }
-        .prize-item { min-width: 100px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 1px solid #222; background: #111; font-size: 13px; color: #ccc; }
-        
-        /* ИНВЕНТАРЬ В ПРОФИЛЕ */
-        .inventory-list { margin-top: 15px; text-align: left; }
-        .inventory-item { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
-        .inventory-item small { opacity: 0.5; font-size: 10px; }
+        .prize-item { min-width: 100px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 1px solid #222; background: #111; font-size: 13px; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 1000; padding: 20px; flex-direction: column; overflow-y: auto; }
         .modal.active { display: flex; }
@@ -42,74 +37,60 @@
 <body>
 
     <div class="header">
-        <div id="username" style="font-weight: 500; opacity: 0.8;">Загрузка...</div>
+        <div id="username">Загрузка...</div>
         <div class="balance-box"><span id="balance">0</span> ⭐</div>
     </div>
 
     <div id="section-main">
         <div class="card case-card">
             <b style="font-size: 18px;">🎁 Кейс Привилегий</b><br>
-            <small style="opacity: 0.7;">Открой и получи бонусы для клуба!</small>
-            
+            <small>Открой и получи бонусы для клуба!</small>
             <div class="roulette-container" id="roulette">
                 <div class="roulette-line"></div>
                 <div class="roulette-tape" id="tape"></div>
             </div>
-
-            <button id="btn-open-case" class="btn-play" style="margin-top:15px; background: #fff; color: #000;" onclick="spinCase()">ОТКРЫТЬ ЗА 1000 ⭐</button>
+            <button id="btn-open-case" class="btn-play" style="margin-top:15px;" onclick="spinCase()">ОТКРЫТЬ ЗА 1000 ⭐</button>
         </div>
-
-        <div class="card" style="opacity: 0.8; background: #1c2127;">
-            <b>Игра Mines 💣</b><br><small>В разработке...</small>
-        </div>
+        <div class="card"><b>Игра Mines 💣</b><br><small>В разработке...</small></div>
     </div>
 
     <div id="modal-profile" class="modal">
-        <div style="display:flex; justify-content: space-between; align-items: center;">
-            <h2>Профиль ⚙️</h2>
-            <button onclick="closeModals()" style="background:none; border:none; color:var(--accent); font-size:20px;">✕</button>
-        </div>
-        
-        <label>Имя пользователя:</label>
-        <input type="text" id="edit-name">
-        
-        <label>Тема приложения:</label>
+        <h2>Профиль ⚙️</h2>
+        <input type="text" id="edit-name" placeholder="Имя">
         <select id="edit-theme" onchange="applyTheme(this.value)">
             <option value="dark">Тёмная</option>
             <option value="light">Светлая</option>
         </select>
-        
         <button class="btn-play" style="background:var(--accent); color:white" onclick="saveProfile()">СОХРАНИТЬ</button>
-
-        <h3 style="margin-top:25px; border-bottom: 1px solid rgba(128,128,128,0.2); padding-bottom: 10px;">🎒 Мои награды</h3>
-        <div id="inventory-container" class="inventory-list">
-            <div style="opacity:0.5; text-align:center;">У вас пока нет наград</div>
-        </div>
+        <h3>🎒 Мои награды</h3>
+        <div id="inventory-container"></div>
+        <button class="btn-play" style="background:none; color:gray; margin-top:20px" onclick="closeModals()">ЗАКРЫТЬ</button>
     </div>
 
     <div id="modal-promo" class="modal">
         <h2>Промокоды 🎫</h2>
         <input type="text" id="promo-input" placeholder="Введите код...">
-        <button class="btn-play" style="margin-top:10px; background:var(--accent); color:white" onclick="usePromo()">АКТИВИРОВАТЬ</button>
-        <button class="btn-play" style="background:none; border:1px solid gray; margin-top:10px; color:var(--text)" onclick="closeModals()">ЗАКРЫТЬ</button>
+        <button class="btn-play" onclick="usePromo()">АКТИВИРОВАТЬ</button>
+        <button class="btn-play" style="background:none; color:gray; margin-top:20px" onclick="closeModals()">НАЗАД</button>
     </div>
 
-    <div class="nav">
+    <nav class="nav">
         <div class="nav-item active" id="nav-home" onclick="closeModals()">🏠<br>Главная</div>
         <div class="nav-item" onclick="openModal('modal-promo')">🎫<br>Промо</div>
         <div class="nav-item" onclick="openModal('modal-profile')">⚙️<br>Профиль</div>
-    </div>
+    </nav>
 
     <script>
-        // Данные Firebase
+        // ИСПОЛЬЗУЕМ ВАШИ ДАННЫЕ ИЗ ФОТО
         const firebaseConfig = {
             apiKey: "AIzaSyBPx6V-_sE6k1_hnOkCvR8E1wOlsabVMbc",
             authDomain: "teamplay-9f75a.firebaseapp.com",
-            databaseURL: "https://teamplay-9f75a-default-rtdb.europe-west1.firebasedatabase.app/",
+            databaseURL: "https://teamplay-9f75a-default-rtdb.europe-west1.firebasedatabase.app", // Без лишних слэшей
             projectId: "teamplay-9f75a",
             storageBucket: "teamplay-9f75a.firebasestorage.app",
             messagingSenderId: "975773372092",
-            appId: "1:975773372092:web:0a67ef446f6c8444318ab9"
+            appId: "1:975773372092:web:0a67ef446f6c8444318ab9",
+            measurementId: "G-384G00VLX9"
         };
 
         firebase.initializeApp(firebaseConfig);
@@ -117,51 +98,99 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        const userId = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "test_user";
+        // Проверка инициализации
+        const userId = tg.initDataUnsafe?.user?.id || "test_user";
         const userRef = db.ref('users/' + userId);
 
-        // Синхронизация данных
         userRef.on('value', (snap) => {
             const data = snap.val();
-            if (data) {
+            if (!data) {
+                // Если пользователя нет, создаем его
+                userRef.set({ 
+                    name: tg.initDataUnsafe?.user?.first_name || "Игрок", 
+                    balance: 5000, // Дарим 5000 для теста
+                    theme: "dark" 
+                });
+            } else {
                 document.getElementById('balance').innerText = data.balance || 0;
                 document.getElementById('username').innerText = data.name || "Игрок";
-                document.getElementById('edit-name').value = data.name || "";
                 applyTheme(data.theme);
                 updateInventoryUI(data.inventory);
             }
+        }, (error) => {
+            console.error("Ошибка БД:", error);
+            document.getElementById('username').innerText = "Ошибка доступа";
         });
 
-        // Шансы выпадения
+        // Шансы и кейс
         const prizes = [
-            { t: "1ч STANDART", i: "🥉", w: 10 },
-            { t: "1ч VIP", i: "🥈", w: 6 },
-            { t: "3ч STANDART", i: "🥉", w: 4 },
-            { t: "3ч VIP", i: "🥈", w: 3 },
-            { t: "6ч STANDART", i: "🥉", w: 2 },
-            { t: "6ч VIP", i: "🥈", w: 1 },
-            { t: "ПС 4 - 1ч", i: "🎮", w: 20 },
-            { t: "ПС 5 - 1ч", i: "🚀", w: 10 },
+            { t: "1ч STANDART", i: "🥉", w: 10 }, { t: "1ч VIP", i: "🥈", w: 6 },
+            { t: "3ч STANDART", i: "🥉", w: 4 }, { t: "3ч VIP", i: "🥈", w: 3 },
+            { t: "6ч STANDART", i: "🥉", w: 2 }, { t: "6ч VIP", i: "🥈", w: 1 },
+            { t: "ПС 4 - 1ч", i: "🎮", w: 20 }, { t: "ПС 5 - 1ч", i: "🚀", w: 10 },
             { t: "500 ⭐", i: "⭐", w: 44, coin: 500 }
         ];
-
-        function getRandomPrize() {
-            let total = prizes.reduce((acc, p) => acc + p.w, 0);
-            let rnd = Math.random() * total;
-            for (let p of prizes) {
-                if (rnd < p.w) return p;
-                rnd -= p.w;
-            }
-        }
 
         function spinCase() {
             userRef.get().then(s => {
                 let bal = s.val().balance || 0;
-                if (bal < 1000) return tg.showAlert("Недостаточно ⭐ для открытия!");
-
+                if (bal < 1000) return tg.showAlert("Мало звезд!");
                 userRef.update({ balance: bal - 1000 });
-                document.getElementById('btn-open-case').disabled = true;
                 
                 const roulette = document.getElementById('roulette');
                 const tape = document.getElementById('tape');
                 roulette.style.display = 'block';
+                tape.style.transition = 'none';
+                tape.style.transform = 'translateX(0)';
+                
+                let tapeHTML = '';
+                for(let i=0; i<60; i++) {
+                    let p = prizes[Math.floor(Math.random()*prizes.length)];
+                    tapeHTML += `<div class="prize-item"><b>${p.i}</b>${p.t}</div>`;
+                }
+                tape.innerHTML = tapeHTML;
+
+                let totalW = prizes.reduce((a, b) => a + b.w, 0);
+                let rnd = Math.random() * totalW;
+                let winPrize = prizes[0];
+                for (let p of prizes) { if (rnd < p.w) { winPrize = p; break; } rnd -= p.w; }
+
+                const winIdx = 55;
+                tape.children[winIdx].innerHTML = `<b style="color:gold">${winPrize.i}</b>${winPrize.t}`;
+
+                setTimeout(() => {
+                    tape.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)';
+                    tape.style.transform = `translateX(-${(winIdx * 100) - (roulette.offsetWidth / 2) + 50}px)`;
+                }, 50);
+
+                setTimeout(() => {
+                    tg.showAlert(`ВЫИГРЫШ: ${winPrize.t}`);
+                    if(winPrize.coin) userRef.update({ balance: (bal - 1000) + winPrize.coin });
+                    else userRef.child('inventory').push({ title: winPrize.t, icon: winPrize.i, date: new Date().toLocaleDateString() });
+                    document.getElementById('btn-open-case').disabled = false;
+                }, 4200);
+            });
+        }
+
+        function updateInventoryUI(inv) {
+            const cont = document.getElementById('inventory-container');
+            if (!inv) return cont.innerHTML = "Пусто";
+            cont.innerHTML = Object.values(inv).map(i => `<div style="padding:5px; border-bottom:1px solid #333">${i.icon} ${i.title} (${i.date})</div>`).join('');
+        }
+
+        function openModal(id) { closeModals(); document.getElementById(id).classList.add('active'); }
+        function closeModals() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); }
+        function applyTheme(t) { t === 'light' ? document.body.classList.add('light-theme') : document.body.classList.remove('light-theme'); }
+        function saveProfile() {
+            userRef.update({ name: document.getElementById('edit-name').value, theme: document.getElementById('edit-theme').value });
+            closeModals();
+        }
+        function usePromo() {
+            if (document.getElementById('promo-input').value.toUpperCase() === "TEAM2024") {
+                userRef.get().then(s => userRef.update({ balance: (s.val().balance || 0) + 1000 }));
+                tg.showAlert("Начислено 1000 ⭐");
+            }
+        }
+    </script>
+</body>
+</html>
