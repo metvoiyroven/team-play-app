@@ -11,14 +11,35 @@
     <style>
         :root { --bg: #0b0e11; --card: #1c2127; --accent: #00d1ff; --text: #ffffff; }
         body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 15px; padding-bottom: 80px; overflow-x: hidden; }
+        
+        /* Шапка */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .balance-box { background: #162a36; padding: 8px 15px; border-radius: 10px; color: var(--accent); font-weight: bold; }
+        
+        /* Сетка игр */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .card { background: var(--card); border-radius: 16px; padding: 15px; border: 1px solid #2d343c; }
+        .card { background: var(--card); border-radius: 16px; padding: 15px; border: 1px solid #2d343c; cursor: pointer; }
         .card.big { grid-column: span 2; background: linear-gradient(135deg, #3730a3, #4f46e5); margin-bottom: 10px; }
-        .btn-play { background: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; margin-top: 10px; width: 100%; }
+        
+        .btn-play { background: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; margin-top: 10px; width: 100%; cursor: pointer; }
+
+        /* Поле для игры Mines */
+        #mines-board { display: none; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; animation: fadeIn 0.3s; }
+        .mine-cell { background: #2d343c; padding: 25px; border-radius: 12px; font-size: 24px; text-align: center; cursor: pointer; border: 1px solid #3e444d; }
+
+        /* Окно профиля */
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 1000; padding: 20px; flex-direction: column; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .input-group { width: 100%; margin: 15px 0; text-align: left; }
+        .input-group label { display: block; margin-bottom: 5px; font-size: 14px; color: #6b7280; }
+        .input-group input, .input-group select { width: 100%; padding: 12px; background: #1c2127; border: 1px solid #30363d; color: white; border-radius: 10px; box-sizing: border-box; }
+
+        /* Навигация */
         .nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(11, 14, 17, 0.95); display: flex; justify-content: space-around; padding: 15px; border-top: 1px solid #2d343c; backdrop-filter: blur(10px); }
-        .nav-item { color: #6b7280; font-size: 10px; text-align: center; }
+        .nav-item { color: #6b7280; font-size: 10px; text-align: center; cursor: pointer; }
+        .nav-item.active { color: var(--accent); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -30,24 +51,51 @@
 
     <div class="card big">
         <div style="font-weight:bold">Кейс с сюрпризом 🎁</div>
-        <div style="font-size:12px; opacity:0.8">Стоимость открытия: 10 ⭐</div>
+        <div style="font-size:12px; opacity:0.8">Стоимость: 10 ⭐ | Приз до 30 ⭐</div>
         <button class="btn-play" onclick="openCase()">ОТКРЫТЬ КЕЙС</button>
     </div>
 
     <div style="margin: 20px 0 10px; font-weight: bold;">🎮 Игры</div>
     <div class="grid">
-        <div class="card" onclick="tg.showAlert('Скоро!')"><b>Mines 💣</b><br><small>Найди алмаз</small></div>
-        <div class="card" onclick="tg.showAlert('Скоро!')"><b>Slots 🎰</b><br><small>Испытай удачу</small></div>
+        <div class="card" onclick="startMines()">
+            <b>Mines 💣</b><br>
+            <small>Ставка 20 ⭐</small>
+        </div>
+        <div class="card" onclick="tg.showAlert('Скоро добавим Слоты!')">
+            <b>Slots 🎰</b><br>
+            <small>В разработке</small>
+        </div>
+    </div>
+
+    <div id="mines-board"></div>
+
+    <div id="profile-modal" class="modal">
+        <h2 style="color: var(--accent);">Настройки профиля</h2>
+        <div class="input-group">
+            <label>Никнейм в игре:</label>
+            <input type="text" id="edit-name">
+        </div>
+        <div class="input-group">
+            <label>Цвет интерфейса:</label>
+            <select id="edit-theme" onchange="applyTheme(this.value)">
+                <option value="#00d1ff">Голубой</option>
+                <option value="#00ff88">Зеленый</option>
+                <option value="#ff4444">Красный</option>
+                <option value="#ffcc00">Золотой</option>
+            </select>
+        </div>
+        <button class="btn-play" style="background: var(--accent);" onclick="saveProfile()">СОХРАНИТЬ</button>
+        <button class="btn-play" style="background: transparent; color: white;" onclick="closeProfile()">ЗАКРЫТЬ</button>
     </div>
 
     <div class="nav">
-        <div class="nav-item">🏠<br>Главная</div>
-        <div class="nav-item">🎰<br>Игры</div>
-        <div class="nav-item">👛<br>Кошелек</div>
-        <div class="nav-item">⚙️<br>Профиль</div>
+        <div class="nav-item active" onclick="location.reload()">🏠<br>Главная</div>
+        <div class="nav-item" onclick="startMines()">💣<br>Мины</div>
+        <div class="nav-item" onclick="openProfile()">⚙️<br>Профиль</div>
     </div>
 
     <script>
+        // ДАННЫЕ FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyBPx6V-_sE6k1_hnOkCvR8E1wOlsabVMbc",
             authDomain: "teamplay-9f75a.firebaseapp.com",
@@ -63,36 +111,81 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Проверка подключения (выведет в консоль)
-        db.ref(".info/connected").on("value", (snap) => {
-            console.log(snap.val() === true ? "Связь с базой есть" : "Связи нет");
-        });
-
         const user = tg.initDataUnsafe.user;
         const userId = user ? user.id : "test_user";
-        document.getElementById('username').innerText = user ? user.first_name : "Игрок";
-
         const userRef = db.ref('users/' + userId);
 
-        // Получаем баланс
+        // Загрузка данных пользователя
         userRef.on('value', (snap) => {
             const data = snap.val();
             if (!data) {
-                userRef.set({ name: user ? user.first_name : "Игрок", balance: 100 });
+                userRef.set({ name: user ? user.first_name : "Игрок", balance: 100, theme: "#00d1ff" });
             } else {
                 document.getElementById('balance').innerText = data.balance + " ⭐";
+                document.getElementById('username').innerText = data.name;
+                if (data.theme) applyTheme(data.theme);
             }
-        }, (error) => {
-            alert("Ошибка базы: " + error.message);
         });
 
+        // ФУНКЦИИ ПРОФИЛЯ
+        function openProfile() {
+            userRef.get().then(snap => {
+                const data = snap.val();
+                document.getElementById('edit-name').value = data.name;
+                document.getElementById('edit-theme').value = data.theme || "#00d1ff";
+                document.getElementById('profile-modal').classList.add('active');
+            });
+        }
+        function closeProfile() { document.getElementById('profile-modal').classList.remove('active'); }
+        function saveProfile() {
+            const name = document.getElementById('edit-name').value;
+            const theme = document.getElementById('edit-theme').value;
+            userRef.update({ name, theme }).then(() => {
+                tg.showAlert("Сохранено!");
+                closeProfile();
+            });
+        }
+        function applyTheme(color) { document.documentElement.style.setProperty('--accent', color); }
+
+        // ИГРА MINES
+        let bombPos = -1;
+        function startMines() {
+            userRef.get().then(snap => {
+                let bal = snap.val().balance;
+                if (bal < 20) return tg.showAlert("Нужно 20 ⭐ для ставки!");
+                userRef.update({ balance: bal - 20 });
+                bombPos = Math.floor(Math.random() * 9);
+                const board = document.getElementById('mines-board');
+                board.innerHTML = '';
+                board.style.display = 'grid';
+                for (let i = 0; i < 9; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'mine-cell';
+                    cell.innerText = "❓";
+                    cell.onclick = () => {
+                        if (i === bombPos) {
+                            cell.innerText = "💣"; cell.style.background = "red";
+                            tg.HapticFeedback.notificationOccurred('error');
+                            setTimeout(() => { board.style.display = 'none'; tg.showAlert("БУМ! Мина!"); }, 500);
+                        } else {
+                            cell.innerText = "💎"; cell.style.background = "#238636";
+                            cell.onclick = null;
+                            userRef.get().then(s => userRef.update({ balance: s.val().balance + 10 }));
+                            tg.HapticFeedback.impactOccurred('light');
+                        }
+                    };
+                    board.appendChild(cell);
+                }
+            });
+        }
+
+        // КЕЙСЫ
         function openCase() {
-            userRef.get().then((snap) => {
+            userRef.get().then(snap => {
                 let bal = snap.val().balance;
                 if (bal < 10) return tg.showAlert("Мало звезд!");
                 let win = Math.floor(Math.random() * 30);
                 userRef.update({ balance: bal - 10 + win });
-                tg.HapticFeedback.impactOccurred('heavy');
                 tg.showAlert(`Выпало: ${win} ⭐`);
             });
         }
