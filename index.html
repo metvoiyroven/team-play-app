@@ -10,52 +10,47 @@
     
     <style>
         :root { --bg: #0b0e11; --card: #1c2127; --accent: #00d1ff; --text: #ffffff; --subtext: #94a3b8; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 10px 15px 120px 15px; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 10px 15px 120px 15px; overflow-x: hidden; }
 
+        /* HEADER */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .balance-chip { background: rgba(0, 209, 255, 0.1); padding: 8px 15px; border-radius: 20px; color: var(--accent); font-weight: 800; border: 1px solid rgba(0, 209, 255, 0.2); }
+        .balance-chip { background: rgba(0, 209, 255, 0.1); padding: 8px 15px; border-radius: 20px; color: var(--accent); font-weight: 800; border: 1px solid rgba(0, 209, 255, 0.2); display: flex; align-items: center; gap: 5px; }
 
+        /* PAGES */
         .page { display: none; }
         .page.active { display: block; animation: fadePage 0.3s ease-out; }
         @keyframes fadePage { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* СПИСОК ИГР */
-        .game-card { 
-            background: var(--card); border-radius: 22px; padding: 20px; 
-            margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); 
-            display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s;
-        }
-        .game-card:active { transform: scale(0.96); }
-
-        /* ЭКРАН КЕЙСА */
-        .case-view { 
-            background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 22px; 
-            padding: 25px; text-align: center; border: 1px solid var(--accent); margin-bottom: 20px;
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-
-        /* ПРИЗЫ */
-        .prize-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-        .prize-item { 
-            background: var(--card); padding: 10px; border-radius: 15px; 
-            text-align: center; border: 1px solid rgba(255,255,255,0.03); 
-            opacity: 0; animation: slideUp 0.5s ease forwards;
-        }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-
-        .btn { background: var(--accent); color: #000; border: none; padding: 16px; border-radius: 16px; font-weight: 800; width: 100%; font-size: 15px; cursor: pointer; }
+        /* CARDS & BUTTONS */
+        .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        .game-card { display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s; }
+        .game-card:active { transform: scale(0.97); }
+        
+        .btn { background: var(--accent); color: #000; border: none; padding: 16px; border-radius: 16px; font-weight: 800; width: 100%; font-size: 15px; cursor: pointer; transition: 0.2s; }
+        .btn:active { transform: scale(0.96); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-back { background: rgba(255,255,255,0.05); color: #fff; margin-top: 15px; border: 1px solid rgba(255,255,255,0.1); }
 
-        /* РУЛЕТКА */
+        /* CASE VIEW */
+        .case-view { background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 25px; padding: 25px; text-align: center; border: 1px solid var(--accent); margin-bottom: 20px; }
+        .prize-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .prize-item { background: var(--card); padding: 12px; border-radius: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.03); opacity: 0; animation: slideUp 0.5s ease forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ROULETTE */
         .roulette-container { height: 110px; background: #000; border-radius: 18px; position: relative; overflow: hidden; margin: 20px 0; display: none; border: 1px solid var(--accent); }
-        .line { position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; background: #ff4757; z-index: 10; }
-        .tape { display: flex; position: absolute; left: 0; height: 100%; transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1); }
+        .line { position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; background: #ff4757; z-index: 10; box-shadow: 0 0 10px #ff4757; }
+        .tape { display: flex; position: absolute; left: 0; height: 100%; }
         .p-item { min-width: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-right: 1px solid #1a1a1a; }
 
-        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(11,14,17,0.95); display: flex; justify-content: space-around; padding: 15px 10px 35px 10px; backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.05); }
-        .nav-link { color: #4b5563; text-decoration: none; text-align: center; font-size: 10px; font-weight: 600; }
+        /* PROFILE XP BAR */
+        .xp-container { background: #1c2127; height: 10px; border-radius: 5px; margin: 10px 0; overflow: hidden; }
+        .xp-bar { background: var(--accent); height: 100%; width: 0%; transition: width 0.5s ease; }
+
+        /* NAVIGATION */
+        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(11,14,17,0.96); display: flex; justify-content: space-around; padding: 15px 10px 35px 10px; backdrop-filter: blur(15px); border-top: 1px solid rgba(255,255,255,0.05); z-index: 1000; }
+        .nav-link { color: #4b5563; text-decoration: none; text-align: center; font-size: 10px; font-weight: 600; transition: 0.2s; }
         .nav-link.active { color: var(--accent); }
         .nav-link i { display: block; font-size: 22px; margin-bottom: 5px; font-style: normal; }
     </style>
@@ -63,13 +58,13 @@
 <body>
 
     <div class="header">
-        <div><span id="h-lvl" style="color:var(--accent); font-weight:800; font-size:12px;">LVL 1</span><br><b id="h-name" style="font-size:18px;">Игрок</b></div>
+        <div><span id="h-lvl" style="color:var(--accent); font-weight:800; font-size:12px;">LVL 1</span><br><b id="h-name" style="font-size:18px;">Загрузка...</b></div>
         <div class="balance-chip"><span id="h-bal">0</span> ⭐</div>
     </div>
 
     <div id="p-home" class="page active">
         <div id="game-list">
-            <div class="game-card" onclick="openCase()">
+            <div class="card game-card" onclick="openCase()">
                 <div style="font-size: 32px;">🎁</div>
                 <div><b>Кейс Привилегий</b><br><span style="color:var(--subtext); font-size:12px;">Открой и получи бонусы для клуба!</span></div>
             </div>
@@ -77,20 +72,46 @@
 
         <div id="case-screen" style="display: none;">
             <div class="case-view">
-                <div style="font-size: 50px;">🎁</div>
-                <h2>Кейс Привилегий</h2>
+                <div style="font-size: 50px; margin-bottom: 10px;">🎁</div>
+                <h2 style="margin:0;">Кейс Привилегий</h2>
                 <div id="r-box" class="roulette-container"><div class="line"></div><div id="tape" class="tape"></div></div>
-                <button class="btn" onclick="spin()">ОТКРЫТЬ ЗА 1000 ⭐</button>
+                <button class="btn" style="margin-top:15px;" onclick="spin()">ОТКРЫТЬ ЗА 1000 ⭐</button>
             </div>
-            <p style="font-size:11px; color:var(--subtext); text-transform:uppercase; margin-bottom:15px;">Возможные призы</p>
+            <p style="font-size:11px; color:var(--subtext); text-transform:uppercase; margin-left:5px; margin-bottom:15px;">Возможные призы</p>
             <div id="prize-grid" class="prize-grid"></div>
             <button class="btn btn-back" onclick="closeCase()">НАЗАД</button>
         </div>
     </div>
 
-    <div id="p-top" class="page"><h2>Топ игроков 🏆</h2><div id="leader-list"></div></div>
-    <div id="p-bonus" class="page"><h2>Бонусы ⚡</h2></div>
-    <div id="p-profile" class="page"><h2>Профиль 👤</h2><div id="inv-list"></div></div>
+    <div id="p-top" class="page">
+        <h2 style="margin-bottom:20px;">Топ игроков 🏆</h2>
+        <div id="leader-list"></div>
+    </div>
+
+    <div id="p-bonus" class="page">
+        <h2 style="margin-bottom:20px;">Бонусы ⚡</h2>
+        <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+            <div><b>Ежедневный бонус</b><br><span id="d-timer" style="color:var(--accent); font-size:12px">Доступно!</span></div>
+            <button id="d-btn" class="btn" style="width:auto; padding:10px 20px;" onclick="claimDaily()">ВЗЯТЬ</button>
+        </div>
+    </div>
+
+    <div id="p-profile" class="page">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+            <h2 style="margin:0;">Мой профиль</h2>
+            <b id="prof-lvl-txt" style="color:var(--accent)">LVL 1</b>
+        </div>
+        <div class="xp-container"><div id="xp-bar" class="xp-bar"></div></div>
+        <div style="text-align:right; font-size:10px; color:var(--subtext); margin-bottom:20px;" id="xp-num">0 / 1000 XP</div>
+
+        <div class="card">
+            <input type="text" id="name-input" placeholder="Ваш ник..." style="width:100%; background:#000; border:1px solid #333; color:#fff; padding:12px; border-radius:12px; margin-bottom:10px;">
+            <button class="btn" onclick="saveName()">СОХРАНИТЬ НИК</button>
+        </div>
+
+        <p style="font-size:11px; color:var(--subtext); text-transform:uppercase; margin-bottom:15px;">Мои награды</p>
+        <div id="inv-list"></div>
+    </div>
 
     <nav class="nav">
         <a href="#" class="nav-link active" onclick="showP('home', this)"><i>🏠</i>Главная</a>
@@ -117,29 +138,32 @@
         const uid = tg.initDataUnsafe?.user?.id || "dev_user";
         const uRef = db.ref('users/' + uid);
 
-        // ВСЕ ПРИЗЫ ИЗ ВАШЕГО СПИСКА
         const prizes = [
-            { n: "1ч STANDART", i: "🥉", p: 10 },
-            { n: "1ч VIP", i: "🥈", p: 6 },
-            { n: "3ч STANDART", i: "🥉", p: 4 },
-            { n: "3ч VIP", i: "🥈", p: 3 },
-            { n: "6ч STANDART", i: "🥉", p: 2 },
-            { n: "6ч VIP", i: "🥈", p: 1 },
-            { n: "ПС 4 - 1ч", i: "🎮", p: 20 },
-            { n: "ПС 5 - 1ч", i: "🚀", p: 10 },
+            { n: "1ч STANDART", i: "🥉", p: 10 }, { n: "1ч VIP", i: "🥈", p: 6 },
+            { n: "3ч STANDART", i: "🥉", p: 4 }, { n: "3ч VIP", i: "🥈", p: 3 },
+            { n: "6ч STANDART", i: "🥉", p: 2 }, { n: "6ч VIP", i: "🥈", p: 1 },
+            { n: "ПС 4 - 1ч", i: "🎮", p: 20 }, { n: "ПС 5 - 1ч", i: "🚀", p: 10 },
             { n: "500 ⭐", i: "⭐", p: 44, coin: 500 }
         ];
+
+        function showP(id, el) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+            document.getElementById('p-' + id).classList.add('active');
+            el.classList.add('active');
+            if(id === 'home') closeCase();
+            if(id === 'top') loadTop();
+            tg.HapticFeedback.impactOccurred('light');
+        }
 
         function openCase() {
             document.getElementById('game-list').style.display = 'none';
             document.getElementById('case-screen').style.display = 'block';
-            tg.HapticFeedback.impactOccurred('medium');
-            
             const grid = document.getElementById('prize-grid');
             grid.innerHTML = prizes.map((p, i) => `
-                <div class="prize-item" style="animation-delay: ${i*0.05}s">
-                    <div style="font-size:24px">${p.i}</div>
-                    <b style="font-size:9px">${p.n}</b>
+                <div class="prize-item" style="animation-delay: ${i*0.06}s">
+                    <div style="font-size:24px; margin-bottom:5px;">${p.i}</div>
+                    <b style="font-size:9px; display:block;">${p.n}</b>
                 </div>
             `).join('');
         }
@@ -149,19 +173,62 @@
             document.getElementById('case-screen').style.display = 'none';
         }
 
-        function getPrize() {
+        uRef.on('value', snap => {
+            const d = snap.val() || { balance: 0, lvl: 1, xp: 0, name: "Игрок" };
+            // Update Headers
+            document.getElementById('h-bal').innerText = d.balance || 0;
+            document.getElementById('h-name').innerText = d.name || "Игрок";
+            document.getElementById('h-lvl').innerText = `LVL ${d.lvl || 1}`;
+            
+            // Update Profile
+            document.getElementById('prof-lvl-txt').innerText = `LVL ${d.lvl || 1}`;
+            const nextXp = (d.lvl || 1) * 1000;
+            document.getElementById('xp-bar').style.width = ((d.xp || 0) / nextXp * 100) + "%";
+            document.getElementById('xp-num').innerText = `${d.xp || 0} / ${nextXp} XP`;
+            if(!document.getElementById('name-input').value) document.getElementById('name-input').value = d.name || "";
+
+            // Update Inventory
+            const inv = d.inventory ? Object.values(d.inventory).reverse() : [];
+            document.getElementById('inv-list').innerHTML = inv.map(i => `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:15px; margin-bottom:8px;">
+                    <div><b>${i.title}</b><br><span style="font-size:10px; color:var(--subtext)">${i.date}</span></div>
+                    <div style="font-size:22px;">${i.icon}</div>
+                </div>
+            `).join(inv.length ? '' : '<center style="opacity:0.3; padding:20px;">Нет наград</center>');
+
+            checkDaily(d.last_d);
+        });
+
+        function saveName() {
+            const n = document.getElementById('name-input').value;
+            if(n.length < 2) return tg.showAlert("Слишком короткий ник");
+            uRef.update({ name: n }).then(() => tg.showAlert("Ник сохранен!"));
+        }
+
+        function loadTop() {
+            db.ref('users').orderByChild('lvl').limitToLast(10).once('value', s => {
+                let items = [];
+                s.forEach(u => items.push(u.val()));
+                document.getElementById('leader-list').innerHTML = items.reverse().map((u, i) => `
+                    <div class="card" style="display:flex; align-items:center; padding:15px; margin-bottom:10px;">
+                        <b style="width:35px; color:var(--accent)">#${i+1}</b>
+                        <div style="flex-grow:1"><b>${u.name || 'Игрок'}</b><br><span style="font-size:11px; color:var(--subtext)">LVL ${u.lvl || 1}</span></div>
+                        <div style="font-weight:bold">${u.balance || 0} ⭐</div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        function getWeightedPrize() {
             let r = Math.random() * 100;
             let s = 0;
-            for(let p of prizes) {
-                s += p.p;
-                if(r <= s) return p;
-            }
+            for(let p of prizes) { s += p.p; if(r <= s) return p; }
             return prizes[prizes.length-1];
         }
 
         function spin() {
-            uRef.once('value', snap => {
-                const d = snap.val() || { balance: 0 };
+            uRef.once('value', s => {
+                const d = s.val() || { balance: 0 };
                 if(d.balance < 1000) return tg.showAlert("Недостаточно звезд!");
 
                 const box = document.getElementById('r-box');
@@ -170,16 +237,16 @@
                 tape.style.transition = 'none';
                 tape.style.transform = 'translateX(0)';
 
-                let h = '';
+                let html = '';
                 for(let i=0; i<60; i++) {
                     const r = prizes[Math.floor(Math.random()*prizes.length)];
-                    h += `<div class="p-item"><div>${r.i}</div><b style="font-size:9px">${r.n}</b></div>`;
+                    html += `<div class="p-item"><div>${r.i}</div><b style="font-size:9px">${r.n}</b></div>`;
                 }
-                tape.innerHTML = h;
+                tape.innerHTML = html;
 
                 const winIdx = 50;
-                const win = getPrize();
-                tape.children[winIdx].innerHTML = `<div style="color:var(--accent)">${win.i}</div><b style="font-size:9px">${win.n}</b>`;
+                const win = getWeightedPrize();
+                tape.children[winIdx].innerHTML = `<div style="color:var(--accent); transform:scale(1.2)">${win.i}</div><b style="font-size:9px">${win.n}</b>`;
 
                 setTimeout(() => {
                     tape.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)';
@@ -188,27 +255,45 @@
 
                 setTimeout(() => {
                     tg.HapticFeedback.notificationOccurred('success');
-                    uRef.update({ balance: d.balance - 1000 + (win.coin || 0) });
+                    let newXp = (d.xp || 0) + 150;
+                    let newLvl = d.lvl || 1;
+                    if(newXp >= newLvl * 1000) { newXp = 0; newLvl++; tg.showAlert("НОВЫЙ УРОВЕНЬ!"); }
+                    
+                    uRef.update({ 
+                        balance: d.balance - 1000 + (win.coin || 0),
+                        xp: newXp,
+                        lvl: newLvl
+                    });
+                    
                     if(!win.coin) uRef.child('inventory').push({ title: win.n, icon: win.i, date: new Date().toLocaleDateString() });
-                    tg.showAlert("Твой приз: " + win.n);
+                    tg.showAlert("Выигрыш: " + win.n);
                     box.style.display = 'none';
                 }, 4300);
             });
         }
 
-        uRef.on('value', snap => {
-            const d = snap.val() || { balance: 0, lvl: 1, name: "Игрок" };
-            document.getElementById('h-bal').innerText = d.balance;
-            document.getElementById('h-name').innerText = d.name;
-            document.getElementById('h-lvl').innerText = `LVL ${d.lvl}`;
-        });
+        function claimDaily() {
+            uRef.once('value', s => {
+                const d = s.val() || {};
+                const now = Date.now();
+                if(d.last_d && now - d.last_d < 86400000) return;
+                uRef.update({ balance: (d.balance || 0) + 100, last_d: now });
+                tg.showAlert("Получено 100 ⭐");
+            });
+        }
 
-        function showP(id, el) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-            document.getElementById('p-' + id).classList.add('active');
-            el.classList.add('active');
-            if(id === 'home') closeCase();
+        function checkDaily(last) {
+            const btn = document.getElementById('d-btn');
+            const txt = document.getElementById('d-timer');
+            if(!last) return;
+            const left = 86400000 - (Date.now() - last);
+            if(left > 0) {
+                btn.disabled = true;
+                txt.innerText = "Через " + Math.ceil(left/3600000) + " ч.";
+            } else {
+                btn.disabled = false;
+                txt.innerText = "Доступно!";
+            }
         }
     </script>
 </body>
