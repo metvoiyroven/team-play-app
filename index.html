@@ -9,136 +9,221 @@
     <script src="https://www.gstatic.com/firebasejs/9.1.1/firebase-database-compat.js"></script>
     
     <style>
-        :root { --bg: #0b0e11; --card: #1c2127; --accent: #00d1ff; --text: #ffffff; --nav-bg: rgba(11, 14, 17, 0.95); --success: #00ff88; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 15px 15px 100px 15px; overflow-x: hidden; }
+        :root { 
+            --bg: #0b0e11; 
+            --card: #1c2127; 
+            --accent: #00d1ff; 
+            --text: #ffffff; 
+            --subtext: #94a3b8;
+            --nav-bg: rgba(11, 14, 17, 0.98); 
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .balance-box { background: var(--card); padding: 8px 15px; border-radius: 10px; color: var(--accent); font-weight: bold; border: 1px solid rgba(128,128,128,0.2); }
-        
-        .menu-item { background: var(--card); border-radius: 16px; padding: 20px; border: 1px solid rgba(128,128,128,0.2); display: flex; align-items: center; cursor: pointer; margin-bottom: 15px; }
-        .menu-item .icon { font-size: 30px; margin-right: 15px; }
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: -apple-system, system-ui, sans-serif; 
+            margin: 0; 
+            padding: 15px 15px 100px 15px; 
+            line-height: 1.4;
+        }
 
-        /* ОКНА */
-        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 1000; padding: 20px; flex-direction: column; overflow-y: auto; }
-        .modal.active { display: flex; }
+        /* HEADER */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding: 0 5px; }
+        .user-info { display: flex; flex-direction: column; }
+        .user-info b { font-size: 18px; }
+        .balance-pill { 
+            background: rgba(0, 209, 255, 0.1); 
+            padding: 8px 16px; 
+            border-radius: 20px; 
+            color: var(--accent); 
+            font-weight: 800; 
+            border: 1px solid rgba(0, 209, 255, 0.2);
+            display: flex; align-items: center; gap: 5px;
+        }
 
-        /* БОНУСЫ И ЗАДАНИЯ */
-        .bonus-card { background: linear-gradient(135deg, #1c2127, #252a31); border-radius: 16px; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(128,128,128,0.1); display: flex; justify-content: space-between; align-items: center; }
-        .bonus-info b { display: block; font-size: 16px; }
-        .bonus-info span { font-size: 12px; color: var(--accent); font-weight: bold; }
-        .btn-claim { background: var(--accent); border: none; padding: 10px 15px; border-radius: 10px; color: #000; font-weight: bold; font-size: 12px; cursor: pointer; }
-        .btn-claim:disabled { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.3); cursor: default; }
+        /* ГЛАВНЫЙ ЭКРАН */
+        .main-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-radius: 24px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
 
-        /* ПРОФИЛЬ */
-        .xp-container { background: rgba(255,255,255,0.05); border-radius: 20px; height: 8px; width: 100%; margin: 10px 0; overflow: hidden; }
-        .xp-bar { background: linear-gradient(90deg, #00d1ff, #0088cc); height: 100%; width: 0%; transition: 0.5s; }
-        .section-title { font-size: 14px; opacity: 0.5; margin: 25px 0 10px 0; text-transform: uppercase; letter-spacing: 1px; }
-        input { width: 100%; padding: 14px; background: var(--card); border: 1px solid rgba(128,128,128,0.2); color: var(--text); border-radius: 12px; margin-bottom: 10px; outline: none; }
+        /* МОДАЛЬНЫЕ ОКНА */
+        .page { display: none; flex-direction: column; }
+        .page.active { display: flex; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .btn-action { background: var(--accent); border: none; padding: 14px; border-radius: 12px; font-weight: bold; width: 100%; color: #fff; cursor: pointer; }
-        .btn-back { background: none; border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; color: var(--text); margin-top: 20px; cursor: pointer; }
+        /* ПРОГРЕСС БАР */
+        .lvl-badge { color: var(--accent); font-weight: bold; font-size: 14px; }
+        .xp-wrapper { background: rgba(255,255,255,0.05); height: 8px; border-radius: 4px; margin: 12px 0; overflow: hidden; }
+        .xp-progress { height: 100%; background: var(--accent); width: 0%; transition: width 0.5s ease; box-shadow: 0 0 10px var(--accent); }
+
+        /* СПИСОК ЗАДАНИЙ И ИНВЕНТАРЬ */
+        .list-item {
+            background: var(--card);
+            border-radius: 18px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+        .item-info { display: flex; flex-direction: column; gap: 4px; }
+        .item-info b { font-size: 15px; }
+        .item-info small { color: var(--subtext); font-size: 12px; }
+
+        /* КНОПКИ */
+        .btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .btn:active { transform: scale(0.96); }
+        .btn:disabled { background: #2d3748; color: #718096; }
+        .btn-full { width: 100%; padding: 16px; font-size: 16px; margin-top: 10px; }
+        .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--text); }
+
+        /* ИНПУТЫ */
+        input {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 16px;
+            border-radius: 14px;
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 12px;
+            outline: none;
+        }
+        input:focus { border-color: var(--accent); }
+
+        /* РУЛЕТКА */
+        .roulette-box {
+            height: 120px;
+            background: #000;
+            border-radius: 18px;
+            position: relative;
+            overflow: hidden;
+            margin: 20px 0;
+            display: none;
+            border: 1px solid var(--accent);
+        }
+        .pointer { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: red; z-index: 5; }
+        .tape { display: flex; position: absolute; left: 0; height: 100%; transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1); }
+        .p-box { min-width: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-right: 1px solid #1a1a1a; font-size: 11px; }
 
         /* НАВИГАЦИЯ */
-        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--nav-bg); display: flex; justify-content: space-around; padding: 12px; border-top: 1px solid rgba(128,128,128,0.1); backdrop-filter: blur(10px); z-index: 1001; }
-        .nav-item { color: #4b5563; font-size: 10px; text-align: center; cursor: pointer; transition: 0.3s; }
-        .nav-item.active { color: var(--accent); }
+        .nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--nav-bg);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 10px 25px 10px;
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .nav-link { color: #4a5568; text-decoration: none; text-align: center; font-size: 11px; font-weight: 500; }
+        .nav-link.active { color: var(--accent); }
+        .nav-link i { display: block; font-size: 22px; margin-bottom: 4px; font-style: normal; }
 
-        /* РУЛЕТКА (БЕЗ ИЗМЕНЕНИЙ) */
-        .roulette-container { position: relative; width: 100%; height: 100px; background: #000; border-radius: 12px; overflow: hidden; margin: 15px 0; border: 2px solid var(--accent); display: none; }
-        .roulette-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #ff0000; z-index: 10; }
-        .roulette-tape { display: flex; position: absolute; left: 0; top: 0; height: 100%; transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1); }
-        .prize-item { min-width: 90px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 1px solid #222; font-size: 11px; }
+        h2 { margin: 0 0 15px 0; font-size: 22px; }
+        .section-label { color: var(--subtext); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin: 25px 0 15px 5px; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div id="username">Загрузка...</div>
-        <div class="balance-box"><span id="balance">0</span> ⭐</div>
-    </div>
-
-    <div id="section-main">
-        <div class="menu-item" onclick="openModal('modal-case-detail')">
-            <div class="icon">🎁</div>
-            <div>
-                <b>Кейс Привилегий</b>
-                <small>Испытай удачу прямо сейчас</small>
-            </div>
-            <div style="margin-left:auto; color:var(--accent)">1000 ⭐</div>
+        <div class="user-info">
+            <span id="header-lvl" class="lvl-badge">LVL 1</span>
+            <b id="header-name">Загрузка...</b>
+        </div>
+        <div class="balance-pill">
+            <span id="top-balance">0</span> ⭐
         </div>
     </div>
 
-    <div id="modal-bonuses" class="modal">
-        <h2>Бесплатные бонусы ⚡</h2>
-        
-        <div class="section-title">Ежедневно</div>
-        <div class="bonus-card">
-            <div class="bonus-info">
-                <b>Ежедневный подарок</b>
-                <span id="daily-timer">+50 ⭐ доступно!</span>
-            </div>
-            <button class="btn-claim" id="btn-daily" onclick="claimDaily()">ЗАБРАТЬ</button>
-        </div>
-
-        <div class="section-title">Разовые задания</div>
-        
-        <div class="bonus-card">
-            <div class="bonus-info">
-                <b>Подписка на ВК</b>
-                <span>+300 ⭐</span>
-            </div>
-            <button class="btn-claim" id="task-vk" onclick="doTask('vk', 'https://vk.com/your_group', 300)">ВЫПОЛНИТЬ</button>
-        </div>
-
-        <div class="bonus-card">
-            <div class="bonus-info">
-                <b>Telegram группа</b>
-                <span>+500 ⭐</span>
-            </div>
-            <button class="btn-claim" id="task-tg" onclick="doTask('tg', 'https://t.me/your_channel', 500)">ВЫПОЛНИТЬ</button>
-        </div>
-
-        <div class="bonus-card">
-            <div class="bonus-info">
-                <b>Пост на стене ВК</b>
-                <span>+1000 ⭐</span>
-            </div>
-            <button class="btn-claim" id="task-post" onclick="doTask('post', 'https://vk.com/share.php?url=your_site', 1000)">ВЫПОЛНИТЬ</button>
-        </div>
-
-        <button class="btn-back" onclick="closeModals()">ЗАКРЫТЬ</button>
-    </div>
-
-    <div id="modal-case-detail" class="modal">
-        <div style="text-align:center;">
-            <span style="font-size: 50px;">🎁</span>
+    <div id="page-home" class="page active">
+        <div class="main-card">
+            <div style="font-size: 50px; margin-bottom: 10px;">🎁</div>
             <h2>Кейс Привилегий</h2>
-            <div class="roulette-container" id="roulette">
-                <div class="roulette-line"></div>
-                <div class="roulette-tape" id="tape"></div>
+            <p style="color: var(--subtext); margin-bottom: 20px;">Открой и получи бонусы для клуба!</p>
+            
+            <div id="roulette-ui" class="roulette-box">
+                <div class="pointer"></div>
+                <div id="tape-el" class="tape"></div>
             </div>
-            <button id="btn-open-case" class="btn-action" onclick="spinCase()">ОТКРЫТЬ ЗА 1000 ⭐</button>
+
+            <button class="btn btn-full" onclick="spinCase()">ОТКРЫТЬ ЗА 1000 ⭐</button>
         </div>
-        <div class="prize-list-grid" id="prize-showcase"></div>
-        <button class="btn-back" onclick="closeModals()">НАЗАД</button>
+        
+        <div class="section-label">Возможные призы</div>
+        <div id="prizes-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;"></div>
     </div>
 
-    <div id="modal-profile" class="modal">
-        <h2>Мой профиль <span id="profile-lvl" style="color:var(--accent); float:right;">LVL 1</span></h2>
-        <div class="xp-container"><div class="xp-bar" id="xp-fill"></div></div>
-        <div style="text-align:right; font-size:11px; margin-bottom:15px;" id="stat-xp-text">0 / 1000 XP</div>
+    <div id="page-bonuses" class="page">
+        <h2>Бонусы ⚡</h2>
         
-        <input type="text" id="edit-nickname" placeholder="Ваш ник...">
-        <button class="btn-action" onclick="saveNickname()">СОХРАНИТЬ НИК</button>
+        <div class="list-item">
+            <div class="item-info">
+                <b>Ежедневный бонус</b>
+                <small id="daily-text">Доступно +50 ⭐</small>
+            </div>
+            <button id="btn-daily" class="btn" onclick="claimDaily()">ВЗЯТЬ</button>
+        </div>
+
+        <div class="section-label">Задания</div>
         
-        <div id="inventory-container" style="margin-top:20px;"></div>
-        <button class="btn-back" onclick="closeModals()">ЗАКРЫТЬ</button>
+        <div class="list-item">
+            <div class="item-info"><b>Подписка ВК</b><small>+300 ⭐</small></div>
+            <button id="task-vk" class="btn" onclick="doTask('vk', 'https://vk.com', 300)">300 ⭐</button>
+        </div>
+        <div class="list-item">
+            <div class="item-info"><b>Telegram канал</b><small>+500 ⭐</small></div>
+            <button id="task-tg" class="btn" onclick="doTask('tg', 'https://t.me', 500)">500 ⭐</button>
+        </div>
+        <div class="list-item">
+            <div class="item-info"><b>Пост на стену ВК</b><small>+1000 ⭐</small></div>
+            <button id="task-post" class="btn" onclick="doTask('post', 'https://vk.com', 1000)">1000 ⭐</button>
+        </div>
+    </div>
+
+    <div id="page-profile" class="page">
+        <h2>Профиль 👤</h2>
+        
+        <div class="main-card" style="text-align: left; padding: 20px;">
+            <div style="display: flex; justify-content: space-between;">
+                <b>Ваш прогресс</b>
+                <span id="profile-xp-val" class="lvl-badge">0 / 1000 XP</span>
+            </div>
+            <div class="xp-wrapper"><div id="xp-fill" class="xp-progress"></div></div>
+            <small style="color: var(--subtext)">Уровень повышается каждые 10 открытий</small>
+        </div>
+
+        <input type="text" id="name-input" placeholder="Введите имя...">
+        <button class="btn btn-full" onclick="updateName()">СОХРАНИТЬ ИМЯ</button>
+
+        <div class="section-label">Мои награды 🎒</div>
+        <div id="inventory"></div>
     </div>
 
     <nav class="nav">
-        <div class="nav-item active" id="nav-home" onclick="closeModals()">🏠<br>Главная</div>
-        <div class="nav-item" onclick="openModal('modal-bonuses')">⚡<br>Бонусы</div>
-        <div class="nav-item" onclick="openModal('modal-profile')">⚙️<br>Профиль</div>
+        <a href="#" class="nav-link active" onclick="showPage('home', this)"><i>🏠</i>Главная</a>
+        <a href="#" class="nav-link" onclick="showPage('bonuses', this)"><i>⚡</i>Бонусы</a>
+        <a href="#" class="nav-link" onclick="showPage('profile', this)"><i>👤</i>Профиль</a>
     </nav>
 
     <script>
@@ -156,123 +241,99 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        const userId = tg.initDataUnsafe?.user?.id || "test_user";
-        const userRef = db.ref('users/' + userId);
+        const uid = tg.initDataUnsafe?.user?.id || "dev_user";
+        const uRef = db.ref('users/' + uid);
 
-        const prizes = [
-            { t: "1ч STANDART", i: "🥉", w: 10 }, { t: "1ч VIP", i: "🥈", w: 6 },
-            { t: "3ч STANDART", i: "🥉", w: 4 }, { t: "3ч VIP", i: "🥈", w: 3 },
-            { t: "500 ⭐", i: "⭐", w: 77, coin: 500 }
+        const items = [
+            { n: "1ч STANDART", i: "🥉", w: 10 }, { n: "1ч VIP", i: "🥈", w: 6 },
+            { n: "3ч VIP", i: "🥈", w: 3 }, { n: "ПС 4 - 1ч", i: "🎮", w: 20 },
+            { n: "500 ⭐", i: "⭐", w: 50, coin: 500 }
         ];
 
-        document.getElementById('prize-showcase').innerHTML = prizes.map(p => `<div class="prize-mini-card"><div>${p.i}</div><div>${p.t}</div></div>`).join('');
+        // Инициализация призов
+        document.getElementById('prizes-grid').innerHTML = items.map(x => `
+            <div style="background:var(--card); padding:12px; border-radius:12px; text-align:center; font-size:10px; border:1px solid rgba(255,255,255,0.03)">
+                <div style="font-size:20px">${x.i}</div><b>${x.n}</b>
+            </div>
+        `).join('');
 
-        userRef.on('value', (snap) => {
-            const data = snap.val();
-            if (data) {
-                document.getElementById('balance').innerText = data.balance || 0;
-                document.getElementById('username').innerText = data.name || "Игрок";
-                
-                // XP и LVL
-                const lvl = data.level || 1;
-                const xp = data.xp || 0;
-                const maxXP = lvl * 1000;
-                document.getElementById('profile-lvl').innerText = `LVL ${lvl}`;
-                document.getElementById('stat-xp-text').innerText = `${xp} / ${maxXP} XP`;
-                document.getElementById('xp-fill').style.width = `${(xp/maxXP)*100}%`;
+        uRef.on('value', snap => {
+            const d = snap.val() || {};
+            document.getElementById('top-balance').innerText = d.balance || 0;
+            document.getElementById('header-name').innerText = d.name || "Игрок";
+            document.getElementById('header-lvl').innerText = `LVL ${d.lvl || 1}`;
+            
+            // Прогресс
+            const xp = d.xp || 0;
+            const target = (d.lvl || 1) * 1000;
+            document.getElementById('profile-xp-val').innerText = `${xp} / ${target} XP`;
+            document.getElementById('xp-fill').style.width = (xp/target*100) + '%';
 
-                // Проверка заданий
-                if (data.tasks?.vk) { document.getElementById('task-vk').disabled = true; document.getElementById('task-vk').innerText = 'ГОТОВО'; }
-                if (data.tasks?.tg) { document.getElementById('task-tg').disabled = true; document.getElementById('task-tg').innerText = 'ГОТОВО'; }
-                if (data.tasks?.post) { document.getElementById('task-post').disabled = true; document.getElementById('task-post').innerText = 'ГОТОВО'; }
+            // Задания
+            if(d.tasks?.vk) { document.getElementById('task-vk').disabled = true; document.getElementById('task-vk').innerText = "✅"; }
+            if(d.tasks?.tg) { document.getElementById('task-tg').disabled = true; document.getElementById('task-tg').innerText = "✅"; }
+            if(d.tasks?.post) { document.getElementById('task-post').disabled = true; document.getElementById('task-post').innerText = "✅"; }
 
-                // Проверка ежедневного бонуса
-                checkDailyStatus(data.last_daily);
-                updateInventoryUI(data.inventory);
-            }
+            // Инвентарь
+            const inv = d.inventory ? Object.values(d.inventory).reverse() : [];
+            document.getElementById('inventory').innerHTML = inv.map(i => `
+                <div class="list-item">
+                    <div class="item-info"><b>${i.title}</b><small>${i.date}</small></div>
+                    <div style="font-size:18px">🎁</div>
+                </div>
+            `).join(inv.length ? '' : '<center style="opacity:0.3">Пусто</center>');
+
+            checkDaily(d.last_d);
         });
 
-        // Ежедневный бонус
-        function claimDaily() {
-            userRef.get().then(s => {
-                const data = s.val();
-                const now = Date.now();
-                if (data.last_daily && now - data.last_daily < 86400000) return;
+        function showPage(id, el) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+            document.getElementById('page-' + id).classList.add('active');
+            el.classList.add('active');
+        }
 
-                userRef.update({
-                    balance: (data.balance || 0) + 50,
-                    last_daily: now
-                }).then(() => tg.showAlert("Вы получили ежедневные 50 ⭐!"));
+        function updateName() {
+            const val = document.getElementById('name-input').value;
+            if(val) uRef.update({ name: val }).then(() => tg.showAlert("Имя обновлено!"));
+        }
+
+        function claimDaily() {
+            uRef.get().then(s => {
+                const d = s.val() || {};
+                const now = Date.now();
+                if(d.last_d && now - d.last_d < 86400000) return;
+                uRef.update({ balance: (d.balance || 0) + 50, last_d: now });
+                tg.showAlert("Вы получили 50 ⭐!");
             });
         }
 
-        function checkDailyStatus(last) {
+        function checkDaily(last) {
             const btn = document.getElementById('btn-daily');
-            const timer = document.getElementById('daily-timer');
-            if (!last) return;
-            
-            const diff = Date.now() - last;
-            if (diff < 86400000) {
+            const txt = document.getElementById('daily-text');
+            if(!last) return;
+            const left = 86400000 - (Date.now() - last);
+            if(left > 0) {
                 btn.disabled = true;
-                const hours = Math.floor((86400000 - diff) / 3600000);
-                timer.innerText = `Доступно через ${hours}ч.`;
+                txt.innerText = "Будет через " + Math.floor(left/3600000) + "ч.";
             } else {
                 btn.disabled = false;
-                timer.innerText = "+50 ⭐ доступно!";
+                txt.innerText = "Доступно +50 ⭐";
             }
         }
 
-        // Задания
-        function doTask(type, link, reward) {
-            tg.openLink(link);
+        function doTask(id, url, rev) {
+            tg.openLink(url);
             setTimeout(() => {
-                userRef.get().then(s => {
-                    const data = s.val();
-                    if (data.tasks?.[type]) return;
-
-                    userRef.update({
-                        balance: (data.balance || 0) + reward,
-                        [`tasks/${type}`]: true
-                    }).then(() => tg.showAlert(`Начислено ${reward} ⭐ за задание!`));
+                uRef.get().then(s => {
+                    const d = s.val() || {};
+                    if(d.tasks?.[id]) return;
+                    uRef.update({ balance: (d.balance || 0) + rev, [`tasks/${id}`]: true });
                 });
-            }, 2000);
-        }
-
-        // Остальные функции (Кейс, Профиль) остаются без изменений
-        function saveNickname() {
-            const n = document.getElementById('edit-nickname').value;
-            if(n) userRef.update({name: n}).then(() => tg.showAlert("Ник изменен!"));
+            }, 3000);
         }
 
         function spinCase() {
-            userRef.get().then(s => {
-                const data = s.val();
-                if ((data.balance || 0) < 1000) return tg.showAlert("Мало звезд!");
-                userRef.update({ balance: data.balance - 1000 });
-                // ... (логика рулетки как была ранее)
-                tg.showAlert("Рулетка запущена!");
-            });
-        }
-
-        function updateInventoryUI(inv) {
-            const cont = document.getElementById('inventory-container');
-            if (!inv) return cont.innerHTML = "";
-            cont.innerHTML = Object.values(inv).reverse().map(i => `<div class="inventory-item"><b>${i.title}</b><small>${i.date}</small></div>`).join('');
-        }
-
-        function openModal(id) { 
-            closeModals(); 
-            document.getElementById(id).classList.add('active'); 
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            if(id === 'modal-bonuses') document.querySelectorAll('.nav-item')[1].classList.add('active');
-            if(id === 'modal-profile') document.querySelectorAll('.nav-item')[2].classList.add('active');
-        }
-
-        function closeModals() { 
-            document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById('nav-home').classList.add('active');
-        }
-    </script>
-</body>
-</html>
+            uRef.get().then(s => {
+                const d = s.val() || {};
+                if((d.balance || 0) < 1000) return tg.showAlert("Недостаточно зв
