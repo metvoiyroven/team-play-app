@@ -20,28 +20,18 @@
         .page.active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .card { background: var(--card); border-radius: 22px; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); }
-        .case-card { background: linear-gradient(135deg, #1e293b, #0f172a); text-align: center; border: 1px solid var(--accent); }
-
-        .xp-bg { background: rgba(255,255,255,0.05); height: 12px; border-radius: 6px; margin: 15px 0 5px 0; overflow: hidden; }
-        .xp-fill { height: 100%; background: var(--accent); width: 0%; transition: 0.8s; box-shadow: 0 0 15px var(--accent); }
+        .card { background: var(--card); border-radius: 22px; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
+        .case-view { background: linear-gradient(135deg, #1e293b, #0f172a); text-align: center; border: 1px solid var(--accent); cursor: default; }
 
         .btn { background: var(--accent); color: #000; border: none; padding: 16px; border-radius: 16px; font-weight: 800; width: 100%; font-size: 15px; cursor: pointer; }
-        .btn:disabled { background: #2d3748; color: #718096; }
+        .btn-back { background: rgba(255,255,255,0.05); color: #fff; margin-top: 15px; border: 1px solid rgba(255,255,255,0.1); }
 
-        .item { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 18px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .item-text b { display: block; font-size: 14px; }
-        .item-text span { font-size: 11px; color: var(--subtext); }
+        /* СПИСОК ИГР */
+        #game-selection h2 { font-size: 18px; margin-bottom: 15px; }
+        .game-card { display: flex; align-items: center; gap: 15px; }
+        .game-icon { font-size: 30px; }
 
-        /* ЛИДЕРБОРД */
-        .leader-item { display: flex; align-items: center; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 18px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.03); }
-        .leader-item.me { border-color: var(--accent); background: rgba(0, 209, 255, 0.05); }
-        .rank { width: 30px; font-weight: 900; color: var(--accent); }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #2d3748; margin: 0 15px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-        .leader-info { flex-grow: 1; }
-        .leader-info b { font-size: 14px; display: block; }
-        .leader-info span { font-size: 11px; color: var(--subtext); }
-
+        /* РУЛЕТКА */
         .roulette-container { height: 110px; background: #000; border-radius: 18px; position: relative; overflow: hidden; margin: 20px 0; display: none; border: 1px solid var(--accent); }
         .line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: red; z-index: 10; }
         .tape { display: flex; position: absolute; left: 0; height: 100%; transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1); }
@@ -51,65 +41,53 @@
         .nav-link { color: #4b5563; text-decoration: none; text-align: center; font-size: 10px; font-weight: 600; }
         .nav-link.active { color: var(--accent); }
         .nav-link i { display: block; font-size: 20px; margin-bottom: 5px; font-style: normal; }
-
-        input { width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; color: #fff; margin-bottom: 10px; outline: none; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div><span id="h-lvl" style="color:var(--accent); font-weight:800; font-size:12px;">LVL 1</span><br><b id="h-name" style="font-size:18px;">Игрок</b></div>
+        <div><span id="h-lvl" style="color:var(--accent); font-weight:800; font-size:12px;">LVL 1</span><br><b id="h-name" style="font-size:18px;">Загрузка...</b></div>
         <div class="balance-chip"><span id="h-bal">0</span> ⭐</div>
     </div>
 
     <div id="p-home" class="page active">
-        <div class="card case-card">
-            <div style="font-size: 50px;">🎁</div>
-            <h2>Кейс Привилегий</h2>
-            <div id="r-box" class="roulette-container"><div class="line"></div><div id="tape" class="tape"></div></div>
-            <button class="btn" onclick="spin()">ОТКРЫТЬ ЗА 1000 ⭐</button>
+        
+        <div id="game-selection">
+            <div class="card game-card" onclick="openCaseMenu()">
+                <div class="game-icon">🎁</div>
+                <div>
+                    <b>Кейс Привилегий</b><br>
+                    <span style="color:var(--subtext); font-size:12px;">Открой и получи бонусы для клуба!</span>
+                </div>
+            </div>
+
+            <div class="card game-card" style="opacity: 0.5;">
+                <div class="game-icon">💣</div>
+                <div>
+                    <b>Игра Mines</b><br>
+                    <span style="color:var(--subtext); font-size:12px;">В разработке...</span>
+                </div>
+            </div>
         </div>
-        <div id="prize-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;"></div>
+
+        <div id="case-details" style="display: none;">
+            <div class="card case-view">
+                <div style="font-size: 50px;">🎁</div>
+                <h2>Кейс Привилегий</h2>
+                <div id="r-box" class="roulette-container"><div class="line"></div><div id="tape" class="tape"></div></div>
+                <button class="btn" onclick="spin()">ОТКРЫТЬ ЗА 1000 ⭐</button>
+            </div>
+
+            <p style="font-size:11px; color:var(--subtext); text-transform:uppercase; margin-left:5px;">Возможные призы</p>
+            <div id="prize-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom: 20px;"></div>
+            
+            <button class="btn btn-back" onclick="closeCaseMenu()">НАЗАД В МЕНЮ</button>
+        </div>
     </div>
 
-    <div id="p-leader" class="page">
-        <h2>Рейтинг игроков 🏆</h2>
-        <p style="font-size: 12px; color: var(--subtext); margin-bottom: 20px;">ТОП-10 игроков нашего клуба по уровню</p>
-        <div id="leader-list"></div>
-    </div>
-
-    <div id="p-bonus" class="page">
-        <h2>Бонусы ⚡</h2>
-        <div class="item">
-            <div class="item-text"><b>Ежедневный подарок</b><span id="d-timer">Доступно +50 ⭐</span></div>
-            <button id="d-btn" class="btn" style="width:auto; padding:10px 20px;" onclick="claimDaily()">ВЗЯТЬ</button>
-        </div>
-        <div class="item">
-            <div class="item-text"><b>Подписка ВК</b><span>+300 ⭐</span></div>
-            <button id="t-vk" class="btn" style="width:80px;" onclick="doTask('vk', 'https://vk.com', 300)">300 ⭐</button>
-        </div>
-        <div class="item">
-            <div class="item-text"><b>Telegram</b><span>+500 ⭐</span></div>
-            <button id="t-tg" class="btn" style="width:80px;" onclick="doTask('tg', 'https://t.me', 500)">500 ⭐</button>
-        </div>
-    </div>
-
-    <div id="p-profile" class="page">
-        <h2>Профиль 👤</h2>
-        <div class="card">
-            <div style="display:flex; justify-content:space-between;"><b>Опыт</b><span id="p-xp-val" style="color:var(--accent)">0/1000</span></div>
-            <div class="xp-bg"><div id="xp-bar" class="xp-fill"></div></div>
-        </div>
-        <div class="card">
-            <b style="display:block; margin-bottom:10px;">Промокод</b>
-            <input type="text" id="promo-input" placeholder="Введите код...">
-            <button class="btn" style="background:transparent; border:1px solid var(--accent); color:var(--accent)" onclick="usePromo()">АКТИВИРОВАТЬ</button>
-        </div>
-        <input type="text" id="name-input" placeholder="Сменить ник...">
-        <button class="btn" onclick="saveName()">СОХРАНИТЬ</button>
-        <p style="font-size:11px; color:var(--subtext); text-transform:uppercase; margin-top:20px;">Инвентарь</p>
-        <div id="inv-list"></div>
-    </div>
+    <div id="p-leader" class="page">...</div>
+    <div id="p-bonus" class="page">...</div>
+    <div id="p-profile" class="page">...</div>
 
     <nav class="nav">
         <a href="#" class="nav-link active" onclick="showP('home', this)"><i>🏠</i>Главная</a>
@@ -119,20 +97,12 @@
     </nav>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBPx6V-_sE6k1_hnOkCvR8E1wOlsabVMbc",
-            authDomain: "teamplay-9f75a.firebaseapp.com",
-            databaseURL: "https://teamplay-9f75a-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "teamplay-9f75a",
-            storageBucket: "teamplay-9f75a.firebasestorage.app",
-            messagingSenderId: "975773372092",
-            appId: "1:975773372092:web:0a67ef446f6c8444318ab9"
-        };
+        // Инициализация Firebase (оставляем вашу конфигурацию)
+        const firebaseConfig = { /* ... ваш конфиг ... */ };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
         tg.expand();
-
         const uid = tg.initDataUnsafe?.user?.id || "dev_user";
         const uRef = db.ref('users/' + uid);
 
@@ -141,94 +111,46 @@
             { n: "3ч VIP", i: "🥈", w: 3 }, { n: "500 ⭐", i: "⭐", w: 81, coin: 500 }
         ];
 
-        document.getElementById('prize-grid').innerHTML = prizes.map(p => `<div style="background:var(--card); padding:10px; border-radius:15px; text-align:center;"><div style="font-size:20px;">${p.i}</div><b style="font-size:9px;">${p.n}</b></div>`).join('');
-
-        uRef.on('value', snap => {
-            const d = snap.val() || { balance: 0, lvl: 1, xp: 0 };
-            document.getElementById('h-bal').innerText = d.balance || 0;
-            document.getElementById('h-name').innerText = d.name || "Игрок";
-            document.getElementById('h-lvl').innerText = `LVL ${d.lvl || 1}`;
-            const target = (d.lvl || 1) * 1000;
-            document.getElementById('p-xp-val').innerText = `${d.xp || 0}/${target}`;
-            document.getElementById('xp-bar').style.width = ((d.xp || 0)/target*100) + '%';
-            
-            const inv = d.inventory ? Object.values(d.inventory).reverse() : [];
-            document.getElementById('inv-list').innerHTML = inv.map(i => `<div class="item"><div class="item-text"><b>${i.title}</b><span>${i.date}</span></div><div style="font-size:20px">${i.icon || '🎁'}</div></div>`).join(inv.length ? '' : '<center style="opacity:0.2; padding:20px;">Пусто</center>');
-            checkDaily(d.last_d);
-        });
-
-        // ЛОГИКА РЕЙТИНГА
-        function loadLeaderboard() {
-            db.ref('users').orderByChild('lvl').limitToLast(10).once('value', snap => {
-                const users = [];
-                snap.forEach(u => { users.push({id: u.key, ...u.val()}); });
-                users.reverse();
-                
-                document.getElementById('leader-list').innerHTML = users.map((u, i) => `
-                    <div class="leader-item ${u.id == uid ? 'me' : ''}">
-                        <div class="rank">#${i+1}</div>
-                        <div class="avatar">${['👤','🥷','🎮','⭐️','🔥'][i % 5]}</div>
-                        <div class="leader-info">
-                            <b>${u.name || 'Игрок'}</b>
-                            <span>Уровень: ${u.lvl || 1} • Опыт: ${u.xp || 0}</span>
-                        </div>
-                        <div style="font-weight:bold; color:var(--accent)">Lvl ${u.lvl || 1}</div>
-                    </div>
-                `).join('');
-            });
+        // Логика переключения внутри главной страницы
+        function openCaseMenu() {
+            document.getElementById('game-selection').style.display = 'none';
+            document.getElementById('case-details').style.display = 'block';
+            renderPrizes();
         }
 
+        function closeCaseMenu() {
+            document.getElementById('game-selection').style.display = 'block';
+            document.getElementById('case-details').style.display = 'none';
+        }
+
+        function renderPrizes() {
+            document.getElementById('prize-grid').innerHTML = prizes.map(p => `
+                <div style="background:var(--card); padding:10px; border-radius:15px; text-align:center;">
+                    <div style="font-size:20px;">${p.i}</div>
+                    <b style="font-size:9px;">${p.n}</b>
+                </div>
+            `).join('');
+        }
+
+        // Базовая логика навигации
         function showP(id, el) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
             document.getElementById('p-' + id).classList.add('active');
             el.classList.add('active');
-            if(id === 'leader') loadLeaderboard();
+            if(id === 'home') closeCaseMenu(); // Всегда сбрасываем на выбор игр
+            if(id === 'leader') typeof loadLeaderboard === 'function' && loadLeaderboard();
         }
 
-        function usePromo() {
-            const code = document.getElementById('promo-input').value.trim().toUpperCase();
-            if(!code) return;
-            db.ref('promos/' + code).once('value', s => {
-                if(s.exists()) {
-                    uRef.once('value', us => {
-                        const ud = us.val() || {};
-                        if(ud.used_promos?.[code]) return tg.showAlert("Уже использован!");
-                        uRef.update({ balance: (ud.balance || 0) + s.val(), [`used_promos/${code}`]: true });
-                        tg.showAlert("Успешно!");
-                    });
-                } else tg.showAlert("Код не найден");
-            });
-        }
-
-        function spin() {
-            uRef.once('value', s => {
-                const d = s.val() || { balance: 0 };
-                if(d.balance < 1000) return tg.showAlert("Мало звезд!");
-                const box = document.getElementById('r-box'); const tape = document.getElementById('tape');
-                box.style.display = 'block'; tape.style.transition = 'none'; tape.style.transform = 'translateX(0)';
-                let h = ''; for(let i=0; i<60; i++) { const r = prizes[Math.floor(Math.random()*prizes.length)]; h += `<div class="p-item"><div style="font-size:26px;">${r.i}</div><b style="font-size:9px;">${r.n}</b></div>`; }
-                tape.innerHTML = h;
-                const winIdx = 50; const win = prizes[Math.floor(Math.random()*prizes.length)];
-                tape.children[winIdx].innerHTML = `<div style="font-size:26px; color:var(--accent);">${win.i}</div><b style="font-size:9px;">${win.n}</b>`;
-                setTimeout(() => {
-                    tape.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)';
-                    tape.style.transform = `translateX(-${(winIdx * 100) - (box.offsetWidth/2) + 50}px)`;
-                }, 50);
-                setTimeout(() => {
-                    tg.HapticFeedback.notificationOccurred('success');
-                    let nxp = (d.xp || 0) + 100; let nlvl = d.lvl || 1; if(nxp >= nlvl*1000) { nxp=0; nlvl++; }
-                    uRef.update({ balance: d.balance - 1000 + (win.coin || 0), xp: nxp, lvl: nlvl });
-                    if(!win.coin) uRef.child('inventory').push({ title: win.n, icon: win.i, date: new Date().toLocaleDateString() });
-                    tg.showAlert("Выигрыш: " + win.n); box.style.display = 'none';
-                }, 4300);
-            });
-        }
-
-        function saveName() { const n = document.getElementById('name-input').value; if(n) uRef.update({ name: n }).then(() => tg.showAlert("Ник изменен!")); }
-        function claimDaily() { uRef.once('value', s => { const d = s.val() || {}; const now = Date.now(); if(d.last_d && now - d.last_d < 86400000) return; uRef.update({ balance: (d.balance || 0) + 50, last_d: now }); }); }
-        function checkDaily(l) { const b = document.getElementById('d-btn'); const t = document.getElementById('d-timer'); if(!l) return; const left = 86400000 - (Date.now() - l); if(left > 0) { b.disabled = true; t.innerText = Math.floor(left/3600000) + "ч."; } else { b.disabled = false; t.innerText = "+50 ⭐"; } }
-        function doTask(id, url, rev) { tg.openLink(url); setTimeout(() => { uRef.once('value', s => { const d = s.val() || {}; if(d.tasks?.[id]) return; uRef.update({ balance: (d.balance || 0) + rev, [`tasks/${id}`]: true }); }); }, 3000); }
+        // Остальные функции (spin, claimDaily, uRef.on и т.д.) остаются такими же, как в предыдущем ответе
+        uRef.on('value', snap => {
+            const d = snap.val() || { balance: 0, lvl: 1, xp: 0 };
+            document.getElementById('h-bal').innerText = d.balance || 0;
+            document.getElementById('h-name').innerText = d.name || "Игрок";
+            document.getElementById('h-lvl').innerText = `LVL ${d.lvl || 1}`;
+        });
+        
+        // ... (скопируйте функции spin, usePromo, doTask из предыдущего рабочего кода)
     </script>
 </body>
 </html>
