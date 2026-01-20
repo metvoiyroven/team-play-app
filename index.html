@@ -10,36 +10,39 @@
     
     <style>
         :root { --bg: #0b0e11; --card: #1c2127; --accent: #00d1ff; --text: #ffffff; --nav-bg: rgba(11, 14, 17, 0.95); }
-        .light-theme { --bg: #f0f2f5; --card: #ffffff; --accent: #0088cc; --text: #000000; --nav-bg: rgba(255, 255, 255, 0.95); }
-
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 15px 15px 100px 15px; transition: 0.3s; overflow-x: hidden; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 15px 15px 100px 15px; overflow-x: hidden; }
+        
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .balance-box { background: var(--card); padding: 8px 15px; border-radius: 10px; color: var(--accent); font-weight: bold; border: 1px solid rgba(128,128,128,0.2); }
         
-        /* МЕНЮ ИГР */
-        .menu-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        .menu-item { background: var(--card); border-radius: 16px; padding: 20px; border: 1px solid rgba(128,128,128,0.2); display: flex; align-items: center; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
-        .menu-item:active { transform: scale(0.98); }
-        .menu-item b { font-size: 18px; display: block; }
-        .menu-item small { opacity: 0.6; }
+        .menu-item { background: var(--card); border-radius: 16px; padding: 20px; border: 1px solid rgba(128,128,128,0.2); display: flex; align-items: center; cursor: pointer; margin-bottom: 15px; }
         .menu-item .icon { font-size: 30px; margin-right: 15px; }
 
-        /* ОКНО КЕЙСА (MODAL) */
+        .xp-container { background: rgba(255,255,255,0.05); border-radius: 20px; height: 8px; width: 100%; margin: 10px 0; overflow: hidden; }
+        .xp-bar { background: linear-gradient(90deg, #00d1ff, #0088cc); height: 100%; width: 0%; transition: 0.5s; }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-card { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; text-align: center; border: 1px solid rgba(128,128,128,0.1); }
+
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 1000; padding: 20px; flex-direction: column; overflow-y: auto; }
         .modal.active { display: flex; }
         
         .case-preview { background: linear-gradient(135deg, #1e1b4b, #312e81); border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 20px; border: 1px solid #4338ca; }
         .prize-list-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
-        .prize-mini-card { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; font-size: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+        .prize-mini-card { background: rgba(0,0,0,0.3); padding: 12px 5px; border-radius: 12px; font-size: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
 
-        /* РУЛЕТКА */
+        .section-title { font-size: 14px; opacity: 0.5; margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 1px; }
+        input { width: 100%; padding: 14px; background: var(--card); border: 1px solid rgba(128,128,128,0.2); color: var(--text); border-radius: 12px; font-size: 15px; margin-bottom: 10px; outline: none; }
+        input:focus { border-color: var(--accent); }
+
+        .btn-action { background: var(--accent); border: none; padding: 14px; border-radius: 12px; font-weight: bold; width: 100%; color: #fff; cursor: pointer; }
+        .btn-promo { background: #282e33; color: var(--accent); border: 1px solid var(--accent); margin-top: 5px; }
+        .btn-back { background: none; border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; color: var(--text); margin-top: 15px; cursor: pointer; }
+
         .roulette-container { position: relative; width: 100%; height: 100px; background: #000; border-radius: 12px; overflow: hidden; margin: 15px 0; border: 2px solid var(--accent); display: none; }
         .roulette-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #ff0000; z-index: 10; }
         .roulette-tape { display: flex; position: absolute; left: 0; top: 0; height: 100%; transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1); }
         .prize-item { min-width: 90px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 1px solid #222; font-size: 11px; }
-
-        .btn-action { background: var(--accent); border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; color: #fff; cursor: pointer; }
-        .btn-back { background: none; border: 1px solid gray; padding: 10px; border-radius: 10px; color: var(--text); margin-top: 15px; }
 
         .nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--nav-bg); display: flex; justify-content: space-around; padding: 12px; border-top: 1px solid rgba(128,128,128,0.1); backdrop-filter: blur(10px); }
         .nav-item { color: #4b5563; font-size: 10px; text-align: center; cursor: pointer; }
@@ -56,24 +59,13 @@
     </div>
 
     <div id="section-main">
-        <h2 style="margin-top:0">Игры и награды 🎮</h2>
-        <div class="menu-grid">
-            <div class="menu-item" onclick="openModal('modal-case-detail')">
-                <div class="icon">🎁</div>
-                <div>
-                    <b>Кейс Привилегий</b>
-                    <small>Выиграй время или VIP статус</small>
-                </div>
-                <div style="margin-left:auto; color:var(--accent)">1000 ⭐</div>
+        <div class="menu-item" onclick="openModal('modal-case-detail')">
+            <div class="icon">🎁</div>
+            <div>
+                <b>Кейс Привилегий</b>
+                <small>Испытай удачу прямо сейчас</small>
             </div>
-
-            <div class="menu-item" style="opacity:0.6">
-                <div class="icon">💣</div>
-                <div>
-                    <b>Mines</b>
-                    <small>Скоро открытие...</small>
-                </div>
-            </div>
+            <div style="margin-left:auto; color:var(--accent)">1000 ⭐</div>
         </div>
     </div>
 
@@ -81,30 +73,42 @@
         <div class="case-preview">
             <span style="font-size: 50px;">🎁</span>
             <h2>Кейс Привилегий</h2>
-            <p>Испытай удачу и получи бонусы для игры в клубе!</p>
-            
             <div class="roulette-container" id="roulette">
                 <div class="roulette-line"></div>
                 <div class="roulette-tape" id="tape"></div>
             </div>
-
             <button id="btn-open-case" class="btn-action" onclick="spinCase()">ОТКРЫТЬ ЗА 1000 ⭐</button>
         </div>
-
-        <h3>Возможные призы:</h3>
-        <div class="prize-list-grid" id="prize-showcase">
-            </div>
-
+        <div class="prize-list-grid" id="prize-showcase"></div>
         <button class="btn-back" onclick="closeModals()">НАЗАД В МЕНЮ</button>
     </div>
 
     <div id="modal-profile" class="modal">
-        <h2>Мой профиль 👤</h2>
-        <div class="inventory-item" style="background:var(--card); border:none">
-            <b>Баланс:</b> <span id="profile-bal">0</span> ⭐
-        </div>
+        <h2 style="margin-bottom: 15px;">Профиль <span id="profile-lvl" style="color:var(--accent); float: right;">LVL 1</span></h2>
         
-        <h3>🎒 Мои награды</h3>
+        <div class="xp-container"><div class="xp-bar" id="xp-fill"></div></div>
+        <div style="font-size: 11px; opacity: 0.5; text-align: right; margin-bottom: 20px;" id="stat-xp-text">0 / 1000 XP</div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <small style="opacity:0.6">Открыто кейсов</small>
+                <div id="stat-cases" style="font-size:18px; font-weight:bold">0</div>
+            </div>
+            <div class="stat-card">
+                <small style="opacity:0.6">Баланс звезд</small>
+                <div id="profile-bal" style="font-size:18px; font-weight:bold; color:var(--accent)">0</div>
+            </div>
+        </div>
+
+        <div class="section-title">Настройки</div>
+        <input type="text" id="edit-nickname" placeholder="Ваш ник...">
+        <button class="btn-action" onclick="saveNickname()">СОХРАНИТЬ НИК</button>
+
+        <div class="section-title">Промокод</div>
+        <input type="text" id="promo-input" placeholder="Введите код..." style="text-transform: uppercase;">
+        <button class="btn-action btn-promo" onclick="activatePromo()">АКТИВИРОВАТЬ</button>
+        
+        <div class="section-title">Мои награды</div>
         <div id="inventory-container"></div>
         
         <button class="btn-back" onclick="closeModals()">ЗАКРЫТЬ</button>
@@ -134,7 +138,6 @@
         const userId = tg.initDataUnsafe?.user?.id || "test_user";
         const userRef = db.ref('users/' + userId);
 
-        // ПУЛ ПРИЗОВ
         const prizes = [
             { t: "1ч STANDART", i: "🥉", w: 10 }, { t: "1ч VIP", i: "🥈", w: 6 },
             { t: "3ч STANDART", i: "🥉", w: 4 }, { t: "3ч VIP", i: "🥈", w: 3 },
@@ -143,13 +146,8 @@
             { t: "500 ⭐", i: "⭐", w: 44, coin: 500 }
         ];
 
-        // Отрисовка списка призов в меню кейса
         document.getElementById('prize-showcase').innerHTML = prizes.map(p => `
-            <div class="prize-mini-card">
-                <div style="font-size:18px">${p.i}</div>
-                <div>${p.t}</div>
-                <div style="font-size:8px; color:var(--accent); margin-top:4px">${p.w}%</div>
-            </div>
+            <div class="prize-mini-card"><div>${p.i}</div><div>${p.t}</div></div>
         `).join('');
 
         userRef.on('value', (snap) => {
@@ -158,24 +156,73 @@
                 document.getElementById('balance').innerText = data.balance || 0;
                 document.getElementById('profile-bal').innerText = data.balance || 0;
                 document.getElementById('username').innerText = data.name || "Игрок";
+                document.getElementById('edit-nickname').value = data.name || "";
+                
+                const lvl = data.level || 1;
+                const xp = data.xp || 0;
+                const maxXP = lvl * 1000;
+                document.getElementById('profile-lvl').innerText = `LVL ${lvl}`;
+                document.getElementById('stat-cases').innerText = data.total_cases || 0;
+                document.getElementById('stat-xp-text').innerText = `${xp} / ${maxXP} XP`;
+                document.getElementById('xp-fill').style.width = `${(xp / maxXP) * 100}%`;
+
                 updateInventoryUI(data.inventory);
             }
         });
 
+        function saveNickname() {
+            const name = document.getElementById('edit-nickname').value.trim();
+            if(name.length > 1) userRef.update({ name: name }).then(() => tg.showAlert("Ник обновлен!"));
+        }
+
+        function activatePromo() {
+            const code = document.getElementById('promo-input').value.trim().toUpperCase();
+            if (!code) return;
+
+            db.ref('promocodes/' + code).get().then(snap => {
+                if (snap.exists()) {
+                    const amount = snap.val();
+                    userRef.get().then(uSnap => {
+                        const userData = uSnap.val();
+                        const used = userData.used_promos || {};
+                        
+                        if (used[code]) {
+                            tg.showAlert("Вы уже использовали этот код!");
+                        } else {
+                            userRef.update({ 
+                                balance: (userData.balance || 0) + amount,
+                                [`used_promos/${code}`]: true 
+                            });
+                            document.getElementById('promo-input').value = '';
+                            tg.showAlert(`Успех! Получено ${amount} ⭐`);
+                        }
+                    });
+                } else {
+                    tg.showAlert("Неверный промокод");
+                }
+            });
+        }
+
         function spinCase() {
             userRef.get().then(s => {
-                let bal = s.val().balance || 0;
+                const data = s.val();
+                let bal = data.balance || 0;
                 if (bal < 1000) return tg.showAlert("Недостаточно ⭐!");
 
-                userRef.update({ balance: bal - 1000 });
-                const btn = document.getElementById('btn-open-case');
-                btn.disabled = true; btn.innerText = "ОТКРЫВАЕМ...";
+                let newXP = (data.xp || 0) + 100;
+                let newLvl = data.level || 1;
+                if (newXP >= newLvl * 1000) { newXP = 0; newLvl++; }
+
+                userRef.update({ 
+                    balance: bal - 1000,
+                    xp: newXP, level: newLvl,
+                    total_cases: (data.total_cases || 0) + 1
+                });
                 
                 const roulette = document.getElementById('roulette');
                 const tape = document.getElementById('tape');
                 roulette.style.display = 'block';
-                tape.style.transition = 'none';
-                tape.style.transform = 'translateX(0)';
+                tape.style.transition = 'none'; tape.style.transform = 'translateX(0)';
                 
                 let tapeHTML = '';
                 for(let i=0; i<60; i++) {
@@ -184,7 +231,6 @@
                 }
                 tape.innerHTML = tapeHTML;
 
-                // Расчет шансов
                 let totalW = prizes.reduce((a, b) => a + b.w, 0);
                 let rnd = Math.random() * totalW;
                 let winPrize = prizes[0];
@@ -195,29 +241,26 @@
 
                 setTimeout(() => {
                     tape.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)';
-                    const offset = (winIdx * 90) - (roulette.offsetWidth / 2) + 45;
-                    tape.style.transform = `translateX(-${offset}px)`;
+                    tape.style.transform = `translateX(-${(winIdx * 90) - (roulette.offsetWidth / 2) + 45}px)`;
                 }, 50);
 
                 setTimeout(() => {
                     tg.HapticFeedback.notificationOccurred('success');
-                    tg.showAlert(`ВЫ ВЫИГРАЛИ: ${winPrize.t}!`);
-                    if(winPrize.coin) userRef.update({ balance: (bal - 1000) + winPrize.coin });
+                    if(winPrize.coin) userRef.update({ balance: (bal - 1000 + winPrize.coin) });
                     else userRef.child('inventory').push({ title: winPrize.t, icon: winPrize.i, date: new Date().toLocaleDateString() });
-                    
-                    btn.disabled = false; btn.innerText = "ОТКРЫТЬ ЗА 1000 ⭐";
                     roulette.style.display = 'none';
+                    tg.showAlert(`ВЫИГРЫШ: ${winPrize.t}!`);
                 }, 4300);
             });
         }
 
         function updateInventoryUI(inv) {
             const cont = document.getElementById('inventory-container');
-            if (!inv) return cont.innerHTML = "<p style='text-align:center; opacity:0.5'>Наград пока нет</p>";
+            if (!inv) return cont.innerHTML = "<p style='opacity:0.3; text-align:center; font-size:12px;'>Список пуст</p>";
             cont.innerHTML = Object.values(inv).reverse().map(i => `
                 <div class="inventory-item">
                     <b>${i.icon || '🎁'} ${i.title}</b>
-                    <small>${i.date}</small>
+                    <small style="opacity:0.5">${i.date}</small>
                 </div>
             `).join('');
         }
