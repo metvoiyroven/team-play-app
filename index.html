@@ -13,6 +13,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body { background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 10px 15px 120px 15px; overflow-x: hidden; }
 
+        /* HEADER */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .balance-chip { background: rgba(0, 209, 255, 0.1); padding: 8px 15px; border-radius: 20px; color: var(--accent); font-weight: 800; border: 1px solid rgba(0, 209, 255, 0.2); }
 
@@ -21,27 +22,26 @@
         @keyframes fadePage { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); }
-        .btn { background: var(--accent); color: #000; border: none; padding: 16px; border-radius: 16px; font-weight: 800; width: 100%; font-size: 15px; cursor: pointer; }
-        .btn-back { background: rgba(255,255,255,0.05); color: #fff; margin-top: 15px; }
+        .btn { background: var(--accent); color: #000; border: none; padding: 16px; border-radius: 16px; font-weight: 800; width: 100%; font-size: 15px; cursor: pointer; transition: 0.2s; }
+        .btn:active { transform: scale(0.96); }
+        .btn:disabled { opacity: 0.5; filter: grayscale(1); }
 
-        /* CASE & ROULETTE */
+        /* ROULETTE */
         .case-view { background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 25px; padding: 25px; text-align: center; border: 1px solid var(--accent); margin-bottom: 20px; }
-        .roulette-container { height: 100px; background: #000; border-radius: 18px; position: relative; overflow: hidden; margin: 20px 0; display: none; border: 1px solid var(--accent); }
-        .line { position: absolute; left: 50%; width: 2px; height: 100%; background: #ff4757; z-index: 10; }
-        .tape { display: flex; position: absolute; left: 0; height: 100%; }
-        .p-item { min-width: 90px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-right: 1px solid #1a1a1a; }
+        .roulette-container { height: 110px; background: #000; border-radius: 18px; position: relative; overflow: hidden; margin: 20px 0; display: none; border: 1px solid var(--accent); }
+        .line { position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; background: #ff4757; z-index: 10; box-shadow: 0 0 10px #ff4757; transform: translateX(-50%); }
+        .tape { display: flex; position: absolute; left: 0; height: 100%; align-items: center; }
+        .p-item { min-width: 100px; max-width: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-right: 1px solid #1a1a1a; }
 
         /* XP BAR */
-        .xp-container { background: #1c2127; height: 8px; border-radius: 4px; margin: 10px 0; overflow: hidden; }
-        .xp-bar { background: var(--accent); height: 100%; width: 0%; transition: 0.5s; }
+        .xp-container { background: #1c2127; height: 10px; border-radius: 5px; margin: 10px 0; overflow: hidden; }
+        .xp-bar { background: var(--accent); height: 100%; width: 0%; transition: width 0.5s ease; }
 
-        /* HISTORY LOG */
-        .log-entry { font-size: 12px; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; }
-
-        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(11,14,17,0.95); display: flex; justify-content: space-around; padding: 15px 10px 35px 10px; border-top: 1px solid rgba(255,255,255,0.05); }
-        .nav-link { color: #4b5563; text-decoration: none; text-align: center; font-size: 10px; }
+        /* NAV */
+        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(11,14,17,0.96); display: flex; justify-content: space-around; padding: 15px 10px 35px 10px; backdrop-filter: blur(15px); border-top: 1px solid rgba(255,255,255,0.05); z-index: 1000; }
+        .nav-link { color: #4b5563; text-decoration: none; text-align: center; font-size: 10px; font-weight: 600; }
         .nav-link.active { color: var(--accent); }
-        .nav-link i { display: block; font-size: 20px; margin-bottom: 4px; font-style: normal; }
+        .nav-link i { display: block; font-size: 22px; margin-bottom: 5px; font-style: normal; }
     </style>
 </head>
 <body>
@@ -54,49 +54,59 @@
     <div id="p-home" class="page active">
         <div id="game-list">
             <div class="card" onclick="openCase()" style="display:flex; align-items:center; gap:15px;">
-                <div style="font-size:30px;">🎁</div>
-                <div><b>Кейс Привилегий</b><br><span style="color:var(--subtext); font-size:12px;">Открой и получи бонусы!</span></div>
+                <div style="font-size:32px;">🎁</div>
+                <div><b>Кейс Привилегий</b><br><span style="color:var(--subtext); font-size:12px;">Открой и получи бонусы для клуба!</span></div>
             </div>
-            
-            <p style="font-size:11px; color:var(--subtext); text-transform:uppercase; margin-top:20px;">Последние открытия</p>
-            <div id="global-logs" class="card" style="padding:10px; max-height:200px; overflow-y:auto;">
-                <center style="opacity:0.3; padding:10px;">История пуста</center>
-            </div>
+            <p style="font-size:11px; color:var(--subtext); text-transform:uppercase; margin-top:20px;">Последние выигрыши</p>
+            <div id="global-logs" class="card" style="padding:10px; font-size:12px;"></div>
         </div>
 
         <div id="case-screen" style="display: none;">
             <div class="case-view">
-                <div style="font-size:40px;">🎁</div>
+                <div style="font-size: 50px;">🎁</div>
                 <h2 style="margin:10px 0;">Кейс Привилегий</h2>
                 <div id="r-box" class="roulette-container"><div class="line"></div><div id="tape" class="tape"></div></div>
-                <button class="btn" onclick="spin()">ОТКРЫТЬ ЗА 1000 ⭐</button>
+                <button class="btn" id="spin-btn" onclick="spin()">ОТКРЫТЬ ЗА 1000 ⭐</button>
             </div>
-            <button class="btn btn-back" onclick="closeCase()">НАЗАД</button>
+            <button class="btn btn-back" style="background:rgba(255,255,255,0.05); color:#fff;" onclick="closeCase()">НАЗАД</button>
+        </div>
+    </div>
+
+    <div id="p-bonus" class="page">
+        <h2 style="margin-bottom:20px;">Бонусы ⚡</h2>
+        <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+            <div><b>Ежедневный бонус</b><br><span id="d-timer" style="color:var(--accent); font-size:12px">Доступно!</span></div>
+            <button id="d-btn" class="btn" style="width:auto; padding:10px 20px;" onclick="claimDaily()">ВЗЯТЬ</button>
         </div>
     </div>
 
     <div id="p-profile" class="page">
-        <h2 style="margin-bottom:5px;">Мой профиль</h2>
+        <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+            <h2 style="margin:0;">Мой профиль</h2>
+            <b id="prof-lvl-txt" style="color:var(--accent)">LVL 1</b>
+        </div>
         <div class="xp-container"><div id="xp-bar" class="xp-bar"></div></div>
-        <div style="text-align:right; font-size:10px; color:var(--subtext); margin-bottom:15px;" id="xp-num">0 / 1000 XP</div>
+        <div style="text-align:right; font-size:10px; color:var(--subtext); margin-bottom:20px;" id="xp-num">0 / 1000 XP</div>
 
         <div class="card">
-            <b>Активация промокода</b>
+            <b>Промокод</b>
             <input type="text" id="promo-input" placeholder="Введите код..." style="width:100%; background:#000; border:1px solid #333; color:#fff; padding:12px; border-radius:12px; margin:10px 0;">
             <button class="btn" onclick="usePromo()">АКТИВИРОВАТЬ</button>
         </div>
 
-        <div class="card" style="margin-top:10px;">
-            <input type="text" id="name-input" placeholder="Никнейм" style="width:100%; background:transparent; border:none; border-bottom:1px solid #333; color:#fff; padding:10px; margin-bottom:10px;">
-            <button class="btn" style="background:rgba(255,255,255,0.05); color:#fff;" onclick="saveName()">ИЗМЕНИТЬ НИК</button>
+        <div class="card">
+            <input type="text" id="name-input" style="width:100%; background:transparent; border:none; border-bottom:1px solid #333; color:#fff; padding:10px; margin-bottom:15px;">
+            <button class="btn" style="background:rgba(255,255,255,0.05); color:#fff;" onclick="saveName()">СОХРАНИТЬ НИК</button>
         </div>
 
-        <p style="font-size:11px; color:var(--subtext); text-transform:uppercase; margin:20px 0 10px 5px;">Мои награды</p>
+        <p style="font-size:11px; color:var(--subtext); text-transform:uppercase; margin-bottom:15px;">Мои награды</p>
         <div id="inv-list"></div>
     </div>
 
-    <div id="p-top" class="page"><h2>Топ игроков 🏆</h2><div id="leader-list"></div></div>
-    <div id="p-bonus" class="page"><h2>Бонусы ⚡</h2><div class="card" onclick="claimDaily()"><b>Ежедневный бонус</b><br><span id="d-timer">Нажми, чтобы забрать!</span></div></div>
+    <div id="p-top" class="page">
+        <h2 style="margin-bottom:20px;">Топ игроков 🏆</h2>
+        <div id="leader-list"></div>
+    </div>
 
     <nav class="nav">
         <a href="#" class="nav-link active" onclick="showP('home', this)"><i>🏠</i>Главная</a>
@@ -122,75 +132,129 @@
         const uRef = db.ref('users/' + uid);
 
         const prizes = [
-            { n: "1ч STANDART", i: "🥉", p: 15 }, { n: "1ч VIP", i: "🥈", p: 10 },
-            { n: "ПС 4 - 1ч", i: "🎮", p: 15 }, { n: "500 ⭐", i: "⭐", p: 60, coin: 500 }
+            { n: "1ч STANDART", i: "🥉", p: 10 }, { n: "1ч VIP", i: "🥈", p: 6 },
+            { n: "3ч STANDART", i: "🥉", p: 4 }, { n: "3ч VIP", i: "🥈", p: 3 },
+            { n: "6ч STANDART", i: "🥉", p: 2 }, { n: "6ч VIP", i: "🥈", p: 1 },
+            { n: "ПС 4 - 1ч", i: "🎮", p: 20 }, { n: "ПС 5 - 1ч", i: "🚀", p: 10 },
+            { n: "500 ⭐", i: "⭐", p: 44, coin: 500 }
         ];
 
-        // ИСТОРИЯ ОТКРЫТИЙ
-        db.ref('logs').limitToLast(10).on('value', s => {
-            let html = '';
-            s.forEach(l => {
-                const val = l.val();
-                html = `<div class="log-entry"><span>${val.name}</span> <b style="color:var(--accent)">${val.prize}</b></div>` + html;
-            });
-            document.getElementById('global-logs').innerHTML = html || '<center>История пуста</center>';
-        });
+        function getWeightedPrize() {
+            let r = Math.random() * 100;
+            let s = 0;
+            for(let p of prizes) { s += p.p; if(r <= s) return p; }
+            return prizes[prizes.length-1];
+        }
 
+        // РАБОТАЮЩАЯ РУЛЕТКА
+        function spin() {
+            uRef.once('value', s => {
+                const d = s.val() || { balance: 0 };
+                if(d.balance < 1000) return tg.showAlert("Недостаточно звезд!");
+
+                const box = document.getElementById('r-box');
+                const tape = document.getElementById('tape');
+                const btn = document.getElementById('spin-btn');
+                
+                btn.disabled = true;
+                box.style.display = 'block';
+                tape.style.transition = 'none';
+                tape.style.transform = 'translateX(0)';
+
+                // Наполняем ленту (60 элементов) для "шума"
+                let html = '';
+                for(let i=0; i<65; i++) {
+                    const r = prizes[Math.floor(Math.random()*prizes.length)];
+                    html += `<div class="p-item"><div style="font-size:24px">${r.i}</div><b style="font-size:9px">${r.n}</b></div>`;
+                }
+                tape.innerHTML = html;
+
+                const winIdx = 55; // На каком элементе остановимся
+                const win = getWeightedPrize();
+                tape.children[winIdx].innerHTML = `<div style="color:var(--accent); transform:scale(1.2)">${win.i}</div><b style="font-size:9px">${win.n}</b>`;
+
+                setTimeout(() => {
+                    tape.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)';
+                    const itemWidth = 100;
+                    const stopPos = (winIdx * itemWidth) - (box.offsetWidth / 2) + (itemWidth / 2);
+                    tape.style.transform = `translateX(-${stopPos}px)`;
+                }, 50);
+
+                setTimeout(() => {
+                    tg.HapticFeedback.notificationOccurred('success');
+                    uRef.update({ 
+                        balance: d.balance - 1000 + (win.coin || 0),
+                        xp: (d.xp || 0) + 150 
+                    });
+                    if(!win.coin) uRef.child('inventory').push({ title: win.n, icon: win.i, date: new Date().toLocaleDateString() });
+                    db.ref('logs').push({ name: d.name || "Игрок", prize: win.n });
+                    
+                    tg.showAlert("Выиграно: " + win.n);
+                    btn.disabled = false;
+                    box.style.display = 'none';
+                }, 4500);
+            });
+        }
+
+        // ОБНОВЛЕНИЕ ДАННЫХ
         uRef.on('value', snap => {
-            const d = snap.val() || { balance: 0, lvl: 1, xp: 0 };
+            const d = snap.val() || { balance: 0, lvl: 1, xp: 0, name: "Игрок" };
             document.getElementById('h-bal').innerText = d.balance;
-            document.getElementById('h-name').innerText = d.name || "Игрок";
+            document.getElementById('h-name').innerText = d.name;
             document.getElementById('h-lvl').innerText = `LVL ${d.lvl}`;
-            document.getElementById('xp-bar').style.width = ((d.xp || 0) / ((d.lvl || 1) * 1000) * 100) + "%";
-            document.getElementById('xp-num').innerText = `${d.xp || 0} / ${(d.lvl || 1) * 1000} XP`;
             
+            // Профиль
+            const nextXp = (d.lvl || 1) * 1000;
+            document.getElementById('xp-bar').style.width = ((d.xp || 0) / nextXp * 100) + "%";
+            document.getElementById('xp-num').innerText = `${d.xp || 0} / ${nextXp} XP`;
+            document.getElementById('prof-lvl-txt').innerText = `LVL ${d.lvl}`;
+
             const inv = d.inventory ? Object.values(d.inventory).reverse() : [];
             document.getElementById('inv-list').innerHTML = inv.map(i => `
                 <div class="card" style="padding:15px; margin-bottom:8px; display:flex; justify-content:space-between;">
-                    <b>${i.title}</b> <span>${i.icon}</span>
+                    <b>${i.title}</b> <span style="font-size:10px; opacity:0.5;">${i.date}</span>
                 </div>
-            `).join('');
+            `).join(inv.length ? '' : '<center style="opacity:0.2">Наград пока нет</center>');
+
+            if(d.xp >= nextXp) uRef.update({ xp: 0, lvl: (d.lvl || 1) + 1 });
         });
 
-        function spin() {
-            uRef.once('value', s => {
-                const d = s.val();
-                if(d.balance < 1000) return tg.showAlert("Нужно 1000 ⭐");
-                
-                document.getElementById('r-box').style.display = 'block';
-                const win = prizes[Math.floor(Math.random()*prizes.length)];
-                
-                // Запись в историю
-                db.ref('logs').push({ name: d.name || "Игрок", prize: win.n });
-
-                setTimeout(() => {
-                    uRef.update({ balance: d.balance - 1000 + (win.coin || 0), xp: (d.xp || 0) + 200 });
-                    if(!win.coin) uRef.child('inventory').push({ title: win.n, icon: win.i, date: "Сегодня" });
-                    tg.showAlert("Выпало: " + win.n);
-                    document.getElementById('r-box').style.display = 'none';
-                }, 2000);
-            });
-        }
-
-        function usePromo() {
-            const code = document.getElementById('promo-input').value.toUpperCase();
-            if(code === 'TEAMPLAY') {
-                uRef.update({ balance: 5000 });
-                tg.showAlert("Промокод активирован! +5000 ⭐");
-            } else {
-                tg.showAlert("Неверный код");
-            }
-        }
+        // ЛОГИ
+        db.ref('logs').limitToLast(5).on('value', s => {
+            let h = '';
+            s.forEach(l => { h = `<div style="padding:5px; border-bottom:1px solid #222;">${l.val().name} выиграл <b>${l.val().prize}</b></div>` + h; });
+            document.getElementById('global-logs').innerHTML = h;
+        });
 
         function showP(id, el) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
             document.getElementById('p-' + id).classList.add('active');
             el.classList.add('active');
+            if(id === 'top') loadTop();
         }
+
+        function loadTop() {
+            db.ref('users').orderByChild('balance').limitToLast(10).once('value', s => {
+                let items = [];
+                s.forEach(u => items.push(u.val()));
+                document.getElementById('leader-list').innerHTML = items.reverse().map((u, i) => `
+                    <div class="card" style="padding:15px; display:flex; justify-content:space-between;">
+                        <span>#${i+1} ${u.name}</span> <b>${u.balance} ⭐</b>
+                    </div>
+                `).join('');
+            });
+        }
+
+        function usePromo() {
+            const c = document.getElementById('promo-input').value.toUpperCase();
+            if(c === 'TEAMPLAY') { uRef.update({ balance: 10000 }); tg.showAlert("Активировано! +10000 ⭐"); }
+            else tg.showAlert("Код не найден");
+        }
+
+        function saveName() { uRef.update({ name: document.getElementById('name-input').value }); tg.showAlert("Ник обновлен"); }
         function openCase() { document.getElementById('game-list').style.display='none'; document.getElementById('case-screen').style.display='block'; }
         function closeCase() { document.getElementById('game-list').style.display='block'; document.getElementById('case-screen').style.display='none'; }
-        function saveName() { uRef.update({ name: document.getElementById('name-input').value }); }
     </script>
 </body>
 </html>
