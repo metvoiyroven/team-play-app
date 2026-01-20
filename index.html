@@ -133,44 +133,176 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
+        tg.expand();
+        
         const uid = tg.initDataUnsafe?.user?.id || "dev_user";
         const uRef = db.ref('users/' + uid);
 
         const prizes = [
             { n: "1ч STANDART", i: "🥉", p: 10 }, { n: "1ч VIP", i: "🥈", p: 6 },
             { n: "3ч STANDART", i: "🥉", p: 4 }, { n: "3ч VIP", i: "🥈", p: 3 },
+            { n: "6ч STANDART", i: "🥉", p: 2 }, { n: "6ч VIP", i: "🥈", p: 1 },
             { n: "ПС 4 - 1ч", i: "🎮", p: 20 }, { n: "ПС 5 - 1ч", i: "🚀", p: 10 },
-            { n: "500 ⭐", i: "⭐", p: 47, coin: 500 }
+            { n: "500 ⭐", i: "⭐", p: 44, coin: 500 }
         ];
 
+        function getWeightedPrize() {
+            let r = Math.random() * 100;
+            let s = 0;
+            for(let p of prizes) { s += p.p; if(r <= s) return p; }
+            return prizes[prizes.length-1];
+        }
+
+        // --- NAVIGATION ---
         function showP(id, el) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
             document.getElementById('p-' + id).classList.add('active');
             el.classList.add('active');
-            if(id === 'home') closeCase(); 
+            
+            if(id === 'home') closeCase(); // При переходе на главную, убеждаемся что экран кейса закрыт
+            if(id === 'top') loadTop();
+            if(id === 'bonus') checkDaily();
+            tg.HapticFeedback.impactOccurred('light');
         }
 
         function openCase() {
             document.getElementById('game-list').style.display = 'none';
             document.getElementById('case-screen').style.display = 'block';
             
-            // Заполнение сетки призов
+            // Заполнение сетки призов при открытии экрана кейса
             const grid = document.getElementById('prize-grid');
             grid.innerHTML = prizes.map(p => `
                 <div class="grid-item">
-                    <div style="font-size:20px; margin-bottom:5px;">${p.i}</div>
+                    <div style="font-size:24px; margin-bottom:5px;">${p.i}</div>
                     <b>${p.n}</b>
                 </div>
             `).join('');
+            tg.HapticFeedback.impactOccurred('medium');
         }
 
         function closeCase() {
             document.getElementById('game-list').style.display = 'block';
             document.getElementById('case-screen').style.display = 'none';
+            tg.HapticFeedback.impactOccurred('light');
         }
 
-        // ВАЛИДАЦИЯ ПУСТЫХ ПОЛЕЙ
+        // --- USER DATA & PROFILE ---
+        uRef.on('value', snap => {
+            const d = snap.val() || { balance: 0, lvl: 1, xp: 0, name: "Игрок", last_d: 0 };
+            
+            // Header
+            document.getElementById('h-bal').innerText = d.balance || 0;
+            document.getElementById('h-name').innerText = d.name || "Игрок";
+            document.getElementById('h-lvl').innerText = `LVL ${d.lvl || 1}`;
+            
+            // Profile
+            const nextXp = (d.lvl || 1) * 1000;
+            document.getElementById('xp-bar').style.width = ((d.xp || 0) / nextXp * 100) + "%";
+            document.getElementById('xp-num').innerText = `${d.xp || 0} / ${nextXp} XP`;
+            document.getElementById('prof-lvl-txt').innerText = `LVL ${d.lvl || 1}`;
+            document.getElementById('name-input').value = d.name || ""; // Обновляем инпут ника
+
+            // Inventory
+            const inv = d.inventory ? Object.values(d.inventory).reverse() : [];
+            document.getElementById('inv-list').innerHTML = inv.map(i => `
+                <div class="card" style="padding:15px; margin-bottom:8px; display:flex; justify-content:space-between;">
+                    <b>${i.title}</b> <span style="font-size:10px; opacity:0.5;">${i.date}</span>
+                </div>
+            `).join(inv.length ? '' : '<center style="opacity:0.2; padding:20px;">Наград пока нет</center>');
+
+            // Level up check
+            if((d.xp || 0) >= nextXp) {
+                uRef.update({ xp: (d.xp || 0) - nextXp, lvl: (d.lvl || 1) + 1 }).then(() => {
+                    tg.showAlert("Поздравляем! Вы получили новый уровень: LVL " + ((d.lvl || 1) + 1));
+                });
+            }
+            checkDaily(d.last_d); // Обновляем состояние ежедневного бонуса
+        });
+
+        // --- GAME LOGIC ---
+        function spin() {
+            uRef.once('value', s => {
+                const d = s.val() || { balance: 0, lvl: 1, xp: 0, name: "Игрок" };
+                if(d.balance < 1000) return tg.showAlert("Недостаточно звезд!");
+
+                const box = document.getElementById('r-box');
+                const tape = document.getElementById('tape');
+                const btn = document.getElementById('spin-btn');
+                
+                btn.disabled = true;
+                box.style.display = 'block';
+                tape.style.transition = 'none';
+                tape.style.transform = 'translateX(0)';
+
+                let html = '';
+                for(let i=0; i<65; i++) { // Больше элементов для плавной прокрутки
+                    const r = prizes[Math.floor(Math.random()*prizes.length)];
+                    html += `<div class="p-item"><div style="font-size:24px">${r.i}</div><b style="font-size:9px">${r.n}</b></div>`;
+                }
+                tape.innerHTML = html;
+
+                const winIdx = 55; // Элемент, на котором остановится рулетка
+                const win = getWeightedPrize(); // Выбор приза по весам
+                tape.children[winIdx].innerHTML = `<div style="color:var(--accent); transform:scale(1.2)">${win.i}</div><b style="font-size:9px">${win.n}</b>`;
+
+                setTimeout(() => {
+                    tape.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)';
+                    const itemWidth = 100; // Ширина элемента p-item в CSS
+                    const stopPos = (winIdx * itemWidth) - (box.offsetWidth / 2) + (itemWidth / 2);
+                    tape.style.transform = `translateX(-${stopPos}px)`;
+                }, 50);
+
+                setTimeout(() => {
+                    tg.HapticFeedback.notificationOccurred('success');
+                    uRef.update({ 
+                        balance: d.balance - 1000 + (win.coin || 0),
+                        xp: (d.xp || 0) + 150 // Добавляем XP за открытие
+                    });
+                    
+                    if(!win.coin) uRef.child('inventory').push({ title: win.n, icon: win.i, date: new Date().toLocaleDateString() });
+                    db.ref('logs').push({ name: d.name || "Игрок", prize: win.n, date: new Date().toLocaleTimeString() });
+                    
+                    tg.showAlert("Выигрыш: " + win.n);
+                    btn.disabled = false;
+                    box.style.display = 'none';
+                }, 4500); // Общая длительность анимации + небольшая задержка
+            });
+        }
+
+        // --- DAILY BONUS ---
+        function claimDaily() {
+            uRef.once('value', s => {
+                const d = s.val() || { balance: 0, last_d: 0 };
+                const now = Date.now();
+                if(now - (d.last_d || 0) < 86400000) return tg.showAlert("Ежедневный бонус уже получен. Попробуйте завтра!");
+                
+                uRef.update({ balance: (d.balance || 0) + 100, last_d: now }).then(() => {
+                    tg.showAlert("Получено 100 ⭐ за ежедневный бонус!");
+                });
+            });
+        }
+
+        function checkDaily(lastClaimed) {
+            const btn = document.getElementById('d-btn');
+            const timerText = document.getElementById('d-timer');
+            const now = Date.now();
+            const timePassed = now - (lastClaimed || 0);
+            const timeLeft = 86400000 - timePassed; // 24 часа в мс
+
+            if (timeLeft > 0) {
+                btn.disabled = true;
+                const hours = Math.floor(timeLeft / 3600000);
+                const minutes = Math.floor((timeLeft % 3600000) / 60000);
+                timerText.innerText = `Доступно через ${hours}ч ${minutes}м`;
+                setTimeout(() => checkDaily(lastClaimed), 60000); // Обновлять каждую минуту
+            } else {
+                btn.disabled = false;
+                timerText.innerText = "Доступно!";
+            }
+        }
+
+        // --- PROMO & NAME ---
         function usePromo() {
             const input = document.getElementById('promo-input');
             const code = input.value.trim().toUpperCase();
@@ -178,8 +310,8 @@
             if(!code) return tg.showAlert("Поле промокода не может быть пустым!");
             
             if(code === 'TEAMPLAY') { 
-                uRef.update({ balance: 10000 }); 
-                tg.showAlert("Активировано! +10000 ⭐");
+                uRef.update({ balance: ((uRef.val()?.balance || 0) + 10000) }); // Пример добавления
+                tg.showAlert("Промокод активирован! +10000 ⭐");
                 input.value = '';
             } else {
                 tg.showAlert("Неверный код");
@@ -197,64 +329,27 @@
             });
         }
 
-        function spin() {
-            uRef.once('value', s => {
-                const d = s.val() || { balance: 0 };
-                if(d.balance < 1000) return tg.showAlert("Недостаточно звезд!");
-
-                const box = document.getElementById('r-box');
-                const tape = document.getElementById('tape');
-                const btn = document.getElementById('spin-btn');
-                
-                btn.disabled = true;
-                box.style.display = 'block';
-                tape.style.transition = 'none';
-                tape.style.transform = 'translateX(0)';
-
-                let html = '';
-                for(let i=0; i<65; i++) {
-                    const r = prizes[Math.floor(Math.random()*prizes.length)];
-                    html += `<div class="p-item"><div style="font-size:24px">${r.i}</div><b style="font-size:9px">${r.n}</b></div>`;
-                }
-                tape.innerHTML = html;
-
-                const winIdx = 55;
-                const win = prizes[Math.floor(Math.random()*prizes.length)]; // Для примера упрощенный рандом
-                tape.children[winIdx].innerHTML = `<div style="color:var(--accent); transform:scale(1.2)">${win.i}</div><b style="font-size:9px">${win.n}</b>`;
-
-                setTimeout(() => {
-                    tape.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)';
-                    const stopPos = (winIdx * 100) - (box.offsetWidth / 2) + 50;
-                    tape.style.transform = `translateX(-${stopPos}px)`;
-                }, 50);
-
-                setTimeout(() => {
-                    uRef.update({ balance: d.balance - 1000 + (win.coin || 0), xp: (d.xp || 0) + 150 });
-                    if(!win.coin) uRef.child('inventory').push({ title: win.n, icon: win.i, date: new Date().toLocaleDateString() });
-                    tg.showAlert("Выигрыш: " + win.n);
-                    btn.disabled = false;
-                    box.style.display = 'none';
-                }, 4500);
+        // --- TOP PLAYERS ---
+        function loadTop() {
+            db.ref('users').orderByChild('balance').limitToLast(10).once('value', s => {
+                let items = [];
+                s.forEach(u => items.push({ ...u.val(), id: u.key }));
+                document.getElementById('leader-list').innerHTML = items.reverse().map((u, i) => `
+                    <div class="card" style="padding:15px; display:flex; justify-content:space-between;">
+                        <span>#${i+1} ${u.name || 'Игрок'}</span> <b>${u.balance || 0} ⭐</b>
+                    </div>
+                `).join('');
             });
         }
 
-        uRef.on('value', snap => {
-            const d = snap.val() || { balance: 0, lvl: 1, xp: 0, name: "Игрок" };
-            document.getElementById('h-bal').innerText = d.balance;
-            document.getElementById('h-name').innerText = d.name;
-            document.getElementById('h-lvl').innerText = `LVL ${d.lvl}`;
-            document.getElementById('prof-lvl-txt').innerText = `LVL ${d.lvl}`;
-            
-            const nextXp = d.lvl * 1000;
-            document.getElementById('xp-bar').style.width = (d.xp / nextXp * 100) + "%";
-            document.getElementById('xp-num').innerText = `${d.xp} / ${nextXp} XP`;
-
-            const inv = d.inventory ? Object.values(d.inventory).reverse() : [];
-            document.getElementById('inv-list').innerHTML = inv.map(i => `
-                <div class="card" style="padding:15px; margin-bottom:8px; display:flex; justify-content:space-between;">
-                    <b>${i.title}</b> <span>${i.icon}</span>
-                </div>
-            `).join('');
+        // --- GLOBAL LOGS ---
+        db.ref('logs').limitToLast(10).on('value', s => {
+            let h = '';
+            s.forEach(l => { 
+                const val = l.val();
+                h = `<div style="padding:5px; border-bottom:1px solid #222;">${val.name || 'Игрок'} выиграл <b>${val.prize}</b></div>` + h; 
+            });
+            document.getElementById('global-logs').innerHTML = h || '<center style="opacity:0.3; padding:10px;">Нет последних выигрышей</center>';
         });
     </script>
 </body>
