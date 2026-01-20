@@ -13,7 +13,6 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body { background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 10px 15px 120px 15px; overflow-x: hidden; }
 
-        /* HEADER */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .balance-chip { background: rgba(0, 209, 255, 0.1); padding: 8px 15px; border-radius: 20px; color: var(--accent); font-weight: 800; border: 1px solid rgba(0, 209, 255, 0.2); }
 
@@ -24,20 +23,21 @@
         .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); }
         .btn { background: var(--accent); color: #000; border: none; padding: 16px; border-radius: 16px; font-weight: 800; width: 100%; font-size: 15px; cursor: pointer; transition: 0.2s; }
         .btn:active { transform: scale(0.96); }
-        .btn:disabled { opacity: 0.5; filter: grayscale(1); }
+        .btn:disabled { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
 
-        /* ROULETTE */
+        /* ROULETTE & GRID */
         .case-view { background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 25px; padding: 25px; text-align: center; border: 1px solid var(--accent); margin-bottom: 20px; }
         .roulette-container { height: 110px; background: #000; border-radius: 18px; position: relative; overflow: hidden; margin: 20px 0; display: none; border: 1px solid var(--accent); }
         .line { position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; background: #ff4757; z-index: 10; box-shadow: 0 0 10px #ff4757; transform: translateX(-50%); }
         .tape { display: flex; position: absolute; left: 0; height: 100%; align-items: center; }
         .p-item { min-width: 100px; max-width: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-right: 1px solid #1a1a1a; }
+        
+        .prize-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .grid-item { background: var(--card); padding: 10px; border-radius: 12px; text-align: center; font-size: 10px; border: 1px solid rgba(255,255,255,0.03); }
 
-        /* XP BAR */
         .xp-container { background: #1c2127; height: 10px; border-radius: 5px; margin: 10px 0; overflow: hidden; }
         .xp-bar { background: var(--accent); height: 100%; width: 0%; transition: width 0.5s ease; }
 
-        /* NAV */
         .nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(11,14,17,0.96); display: flex; justify-content: space-around; padding: 15px 10px 35px 10px; backdrop-filter: blur(15px); border-top: 1px solid rgba(255,255,255,0.05); z-index: 1000; }
         .nav-link { color: #4b5563; text-decoration: none; text-align: center; font-size: 10px; font-weight: 600; }
         .nav-link.active { color: var(--accent); }
@@ -53,9 +53,9 @@
 
     <div id="p-home" class="page active">
         <div id="game-list">
-            <div class="card" onclick="openCase()" style="display:flex; align-items:center; gap:15px;">
+            <div class="card" onclick="openCase()" style="display:flex; align-items:center; gap:15px; cursor:pointer;">
                 <div style="font-size:32px;">🎁</div>
-                <div><b>Кейс Привилегий</b><br><span style="color:var(--subtext); font-size:12px;">Открой и получи бонусы для клуба!</span></div>
+                <div><b>Кейс Привилегий</b><br><span style="color:var(--subtext); font-size:12px;">Нажми, чтобы посмотреть призы</span></div>
             </div>
             <p style="font-size:11px; color:var(--subtext); text-transform:uppercase; margin-top:20px;">Последние выигрыши</p>
             <div id="global-logs" class="card" style="padding:10px; font-size:12px;"></div>
@@ -68,7 +68,11 @@
                 <div id="r-box" class="roulette-container"><div class="line"></div><div id="tape" class="tape"></div></div>
                 <button class="btn" id="spin-btn" onclick="spin()">ОТКРЫТЬ ЗА 1000 ⭐</button>
             </div>
-            <button class="btn btn-back" style="background:rgba(255,255,255,0.05); color:#fff;" onclick="closeCase()">НАЗАД</button>
+            
+            <p style="font-size:11px; color:var(--subtext); text-transform:uppercase; margin-left:5px;">Возможные призы</p>
+            <div id="prize-grid" class="prize-grid"></div>
+
+            <button class="btn" style="background:rgba(255,255,255,0.05); color:#fff; margin-top:20px;" onclick="closeCase()">НАЗАД</button>
         </div>
     </div>
 
@@ -95,7 +99,8 @@
         </div>
 
         <div class="card">
-            <input type="text" id="name-input" style="width:100%; background:transparent; border:none; border-bottom:1px solid #333; color:#fff; padding:10px; margin-bottom:15px;">
+            <b>Изменить ник</b>
+            <input type="text" id="name-input" placeholder="Ваш ник..." style="width:100%; background:#000; border:1px solid #333; color:#fff; padding:12px; border-radius:12px; margin:10px 0;">
             <button class="btn" style="background:rgba(255,255,255,0.05); color:#fff;" onclick="saveName()">СОХРАНИТЬ НИК</button>
         </div>
 
@@ -134,19 +139,64 @@
         const prizes = [
             { n: "1ч STANDART", i: "🥉", p: 10 }, { n: "1ч VIP", i: "🥈", p: 6 },
             { n: "3ч STANDART", i: "🥉", p: 4 }, { n: "3ч VIP", i: "🥈", p: 3 },
-            { n: "6ч STANDART", i: "🥉", p: 2 }, { n: "6ч VIP", i: "🥈", p: 1 },
             { n: "ПС 4 - 1ч", i: "🎮", p: 20 }, { n: "ПС 5 - 1ч", i: "🚀", p: 10 },
-            { n: "500 ⭐", i: "⭐", p: 44, coin: 500 }
+            { n: "500 ⭐", i: "⭐", p: 47, coin: 500 }
         ];
 
-        function getWeightedPrize() {
-            let r = Math.random() * 100;
-            let s = 0;
-            for(let p of prizes) { s += p.p; if(r <= s) return p; }
-            return prizes[prizes.length-1];
+        function showP(id, el) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+            document.getElementById('p-' + id).classList.add('active');
+            el.classList.add('active');
+            if(id === 'home') closeCase(); 
         }
 
-        // РАБОТАЮЩАЯ РУЛЕТКА
+        function openCase() {
+            document.getElementById('game-list').style.display = 'none';
+            document.getElementById('case-screen').style.display = 'block';
+            
+            // Заполнение сетки призов
+            const grid = document.getElementById('prize-grid');
+            grid.innerHTML = prizes.map(p => `
+                <div class="grid-item">
+                    <div style="font-size:20px; margin-bottom:5px;">${p.i}</div>
+                    <b>${p.n}</b>
+                </div>
+            `).join('');
+        }
+
+        function closeCase() {
+            document.getElementById('game-list').style.display = 'block';
+            document.getElementById('case-screen').style.display = 'none';
+        }
+
+        // ВАЛИДАЦИЯ ПУСТЫХ ПОЛЕЙ
+        function usePromo() {
+            const input = document.getElementById('promo-input');
+            const code = input.value.trim().toUpperCase();
+            
+            if(!code) return tg.showAlert("Поле промокода не может быть пустым!");
+            
+            if(code === 'TEAMPLAY') { 
+                uRef.update({ balance: 10000 }); 
+                tg.showAlert("Активировано! +10000 ⭐");
+                input.value = '';
+            } else {
+                tg.showAlert("Неверный код");
+            }
+        }
+
+        function saveName() {
+            const input = document.getElementById('name-input');
+            const name = input.value.trim();
+            
+            if(!name || name.length < 2) return tg.showAlert("Ник слишком короткий или пустой!");
+            
+            uRef.update({ name: name }).then(() => {
+                tg.showAlert("Ник обновлен на: " + name);
+            });
+        }
+
         function spin() {
             uRef.once('value', s => {
                 const d = s.val() || { balance: 0 };
@@ -161,7 +211,6 @@
                 tape.style.transition = 'none';
                 tape.style.transform = 'translateX(0)';
 
-                // Наполняем ленту (60 элементов) для "шума"
                 let html = '';
                 for(let i=0; i<65; i++) {
                     const r = prizes[Math.floor(Math.random()*prizes.length)];
@@ -169,92 +218,44 @@
                 }
                 tape.innerHTML = html;
 
-                const winIdx = 55; // На каком элементе остановимся
-                const win = getWeightedPrize();
+                const winIdx = 55;
+                const win = prizes[Math.floor(Math.random()*prizes.length)]; // Для примера упрощенный рандом
                 tape.children[winIdx].innerHTML = `<div style="color:var(--accent); transform:scale(1.2)">${win.i}</div><b style="font-size:9px">${win.n}</b>`;
 
                 setTimeout(() => {
                     tape.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)';
-                    const itemWidth = 100;
-                    const stopPos = (winIdx * itemWidth) - (box.offsetWidth / 2) + (itemWidth / 2);
+                    const stopPos = (winIdx * 100) - (box.offsetWidth / 2) + 50;
                     tape.style.transform = `translateX(-${stopPos}px)`;
                 }, 50);
 
                 setTimeout(() => {
-                    tg.HapticFeedback.notificationOccurred('success');
-                    uRef.update({ 
-                        balance: d.balance - 1000 + (win.coin || 0),
-                        xp: (d.xp || 0) + 150 
-                    });
+                    uRef.update({ balance: d.balance - 1000 + (win.coin || 0), xp: (d.xp || 0) + 150 });
                     if(!win.coin) uRef.child('inventory').push({ title: win.n, icon: win.i, date: new Date().toLocaleDateString() });
-                    db.ref('logs').push({ name: d.name || "Игрок", prize: win.n });
-                    
-                    tg.showAlert("Выиграно: " + win.n);
+                    tg.showAlert("Выигрыш: " + win.n);
                     btn.disabled = false;
                     box.style.display = 'none';
                 }, 4500);
             });
         }
 
-        // ОБНОВЛЕНИЕ ДАННЫХ
         uRef.on('value', snap => {
             const d = snap.val() || { balance: 0, lvl: 1, xp: 0, name: "Игрок" };
             document.getElementById('h-bal').innerText = d.balance;
             document.getElementById('h-name').innerText = d.name;
             document.getElementById('h-lvl').innerText = `LVL ${d.lvl}`;
-            
-            // Профиль
-            const nextXp = (d.lvl || 1) * 1000;
-            document.getElementById('xp-bar').style.width = ((d.xp || 0) / nextXp * 100) + "%";
-            document.getElementById('xp-num').innerText = `${d.xp || 0} / ${nextXp} XP`;
             document.getElementById('prof-lvl-txt').innerText = `LVL ${d.lvl}`;
+            
+            const nextXp = d.lvl * 1000;
+            document.getElementById('xp-bar').style.width = (d.xp / nextXp * 100) + "%";
+            document.getElementById('xp-num').innerText = `${d.xp} / ${nextXp} XP`;
 
             const inv = d.inventory ? Object.values(d.inventory).reverse() : [];
             document.getElementById('inv-list').innerHTML = inv.map(i => `
                 <div class="card" style="padding:15px; margin-bottom:8px; display:flex; justify-content:space-between;">
-                    <b>${i.title}</b> <span style="font-size:10px; opacity:0.5;">${i.date}</span>
+                    <b>${i.title}</b> <span>${i.icon}</span>
                 </div>
-            `).join(inv.length ? '' : '<center style="opacity:0.2">Наград пока нет</center>');
-
-            if(d.xp >= nextXp) uRef.update({ xp: 0, lvl: (d.lvl || 1) + 1 });
+            `).join('');
         });
-
-        // ЛОГИ
-        db.ref('logs').limitToLast(5).on('value', s => {
-            let h = '';
-            s.forEach(l => { h = `<div style="padding:5px; border-bottom:1px solid #222;">${l.val().name} выиграл <b>${l.val().prize}</b></div>` + h; });
-            document.getElementById('global-logs').innerHTML = h;
-        });
-
-        function showP(id, el) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-            document.getElementById('p-' + id).classList.add('active');
-            el.classList.add('active');
-            if(id === 'top') loadTop();
-        }
-
-        function loadTop() {
-            db.ref('users').orderByChild('balance').limitToLast(10).once('value', s => {
-                let items = [];
-                s.forEach(u => items.push(u.val()));
-                document.getElementById('leader-list').innerHTML = items.reverse().map((u, i) => `
-                    <div class="card" style="padding:15px; display:flex; justify-content:space-between;">
-                        <span>#${i+1} ${u.name}</span> <b>${u.balance} ⭐</b>
-                    </div>
-                `).join('');
-            });
-        }
-
-        function usePromo() {
-            const c = document.getElementById('promo-input').value.toUpperCase();
-            if(c === 'TEAMPLAY') { uRef.update({ balance: 10000 }); tg.showAlert("Активировано! +10000 ⭐"); }
-            else tg.showAlert("Код не найден");
-        }
-
-        function saveName() { uRef.update({ name: document.getElementById('name-input').value }); tg.showAlert("Ник обновлен"); }
-        function openCase() { document.getElementById('game-list').style.display='none'; document.getElementById('case-screen').style.display='block'; }
-        function closeCase() { document.getElementById('game-list').style.display='block'; document.getElementById('case-screen').style.display='none'; }
     </script>
 </body>
 </html>
