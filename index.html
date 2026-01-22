@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TeamPlay Pro</title>
+    <title>TeamPlay Ultimate</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -11,181 +11,271 @@
     <style>
         :root { --bg: #0b0e11; --card: #1c2127; --accent: #00d1ff; --danger: #ff4757; --text: #ffffff; --subtext: #94a3b8; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 10px 15px 120px 15px; overflow-x: hidden; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 10px 15px 120px 15px; }
 
-        /* Загрузчик */
-        #loader { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: 0.5s; }
-        .spinner { width: 40px; height: 40px; border: 4px solid rgba(0, 209, 255, 0.1); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .balance-chip { background: rgba(0, 209, 255, 0.1); padding: 8px 15px; border-radius: 20px; color: var(--accent); font-weight: bold; border: 1px solid rgba(0, 209, 255, 0.2); }
 
-        /* Навигация */
-        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #0b0e11fb; display: flex; justify-content: space-around; padding: 15px 5px 30px; border-top: 1px solid #ffffff10; backdrop-filter: blur(10px); z-index: 1000; }
-        .nav-link { color: #4b5563; text-decoration: none; font-size: 10px; text-align: center; flex: 1; }
-        .nav-link.active { color: var(--accent); }
-        .nav-link.active-red { color: var(--danger); }
-        .nav-link i { display: block; font-size: 20px; font-style: normal; margin-bottom: 4px; }
-
-        /* Карточки */
         .page { display: none; }
         .page.active { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); }
-        .btn { background: var(--accent); color: #000; border: none; padding: 16px; border-radius: 16px; font-weight: 800; width: 100%; cursor: pointer; transition: 0.2s; }
-        .btn:active { transform: scale(0.98); }
 
-        /* Оформление Банов */
-        .ban-item { border: 1px solid rgba(255, 71, 87, 0.3); background: linear-gradient(135deg, rgba(255, 71, 87, 0.1), transparent); position: relative; }
-        .ban-badge { position: absolute; top: 15px; right: 15px; background: var(--danger); color: white; font-size: 10px; padding: 2px 8px; border-radius: 5px; font-weight: bold; }
-        
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .balance-chip { background: rgba(0, 209, 255, 0.1); padding: 8px 15px; border-radius: 20px; color: var(--accent); font-weight: bold; border: 1px solid rgba(0, 209, 255, 0.2); }
+        .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        .btn { background: var(--accent); color: #000; border: none; padding: 16px; border-radius: 16px; font-weight: 800; width: 100%; cursor: pointer; }
+        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        /* XP BAR */
+        .xp-bg { background: #111; height: 8px; border-radius: 4px; margin: 10px 0; overflow: hidden; }
+        .xp-fill { background: var(--accent); height: 100%; width: 0%; transition: 0.5s; }
+
+        /* NAV */
+        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #0b0e11fb; display: flex; justify-content: space-around; padding: 15px 5px 30px; border-top: 1px solid #ffffff10; backdrop-filter: blur(10px); z-index: 1000; }
+        .nav-link { color: #4b5563; text-decoration: none; font-size: 10px; text-align: center; flex: 1; }
+        .nav-link.active { color: var(--accent); }
+        .nav-link i { display: block; font-size: 20px; font-style: normal; margin-bottom: 4px; }
+
+        /* CASE ANIMATION */
+        .roulette-box { height: 100px; background: #000; border-radius: 15px; position: relative; overflow: hidden; margin: 15px 0; border: 1px solid var(--accent); display: none; }
+        .tape { display: flex; position: absolute; left: 0; height: 100%; align-items: center; transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1); }
+        .p-item { min-width: 100px; text-align: center; font-size: 12px; }
     </style>
 </head>
 <body>
 
-<div id="loader"><div class="spinner"></div></div>
-
-<div class="header">
-    <div><span id="h-lvl" style="color:var(--accent); font-size:12px;">LVL 1</span><br><b id="h-name">Загрузка...</b></div>
-    <div class="balance-chip"><span id="h-bal">0</span> ⭐</div>
-</div>
-
-<div id="p-home" class="page active">
-    <div class="card" onclick="openCase()" style="cursor:pointer;">
-        <b style="font-size:18px;">🎁 Кейс Привилегий</b>
-        <p style="color:var(--subtext); margin:5px 0 0; font-size:12px;">Нажми, чтобы открыть за 1000 ⭐</p>
+    <div class="header">
+        <div><span id="h-lvl" style="color:var(--accent); font-size:12px;">LVL 1</span><br><b id="h-name">Загрузка...</b></div>
+        <div class="balance-chip"><span id="h-bal">0</span> ⭐</div>
     </div>
-    <div class="card">
-        <p style="text-transform:uppercase; color:var(--subtext); font-size:11px; margin-bottom:10px;">Последние выигрыши</p>
-        <div id="global-logs" style="font-size:13px;"></div>
+
+    <div id="p-home" class="page active">
+        <div id="home-main">
+            <div class="card" onclick="openCaseMenu()" style="cursor:pointer;">
+                <b style="font-size:18px;">🎁 Кейс Привилегий</b>
+                <p style="color:var(--subtext); margin:5px 0 0; font-size:12px;">Открыть за 1000 ⭐</p>
+            </div>
+            <div class="card">
+                <p style="text-transform:uppercase; color:var(--subtext); font-size:11px; margin-bottom:10px;">Лента выигрышей</p>
+                <div id="global-logs" style="font-size:12px;"></div>
+            </div>
+        </div>
+
+        <div id="case-ui" style="display:none;">
+            <div class="card" style="text-align:center;">
+                <div id="r-box" class="roulette-box"><div id="tape" class="tape"></div></div>
+                <button class="btn" id="spin-btn" onclick="startSpin()">КРУТИТЬ</button>
+            </div>
+            <button class="btn" style="background:#222; color:#fff;" onclick="closeCaseMenu()">НАЗАД</button>
+        </div>
     </div>
-</div>
 
-<div id="p-top" class="page">
-    <h2 style="margin-bottom:20px;">Топ игроков 🏆</h2>
-    <div id="leader-list"></div>
-</div>
-
-<div id="p-bans" class="page">
-    <h2 style="margin-bottom:20px; color:var(--danger)">Бан-лист ⛔</h2>
-    <div id="ban-list"></div>
-</div>
-
-<div id="p-bonus" class="page">
-    <h2>Бонусы ⚡</h2>
-    <div class="card">
-        <b>Ежедневный бонус</b>
-        <button class="btn" style="margin-top:10px;" onclick="claimDaily()">ЗАБРАТЬ 100 ⭐</button>
+    <div id="p-top" class="page">
+        <h2>Рейтинг 🏆</h2>
+        <div id="leader-list"></div>
     </div>
-</div>
 
-<div id="p-profile" class="page">
-    <h2>Профиль 👤</h2>
-    <div class="card">
-        <input type="text" id="name-input" placeholder="Изменить ник" style="width:100%; background:#000; border:1px solid #333; color:#fff; padding:12px; border-radius:10px; margin-bottom:10px;">
-        <button class="btn" onclick="saveName()">СОХРАНИТЬ</button>
+    <div id="p-bonus" class="page">
+        <h2>Бонусы ⚡</h2>
+        <div class="card">
+            <b>Ежедневная награда</b>
+            <p id="bonus-timer" style="font-size:12px; color:var(--subtext);">Доступно раз в 24 часа</p>
+            <button class="btn" id="daily-btn" onclick="claimDaily()">ЗАБРАТЬ 100 ⭐</button>
+        </div>
     </div>
-    <div id="inv-list"></div>
-</div>
 
-<nav class="nav">
-    <a href="#" class="nav-link active" onclick="showP('home', this)"><i>🏠</i>Главная</a>
-    <a href="#" class="nav-link" onclick="showP('top', this)"><i>🏆</i>ТОП</a>
-    <a href="#" class="nav-link" onclick="showP('bans', this)"><i>⛔</i>Баны</a>
-    <a href="#" class="nav-link" onclick="showP('bonus', this)"><i>⚡</i>Бонусы</a>
-    <a href="#" class="nav-link" onclick="showP('profile', this)"><i>👤</i>Профиль</a>
-</nav>
+    <div id="p-profile" class="page">
+        <h2>Мой профиль 👤</h2>
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; font-size:12px;">
+                <span id="prof-lvl">LVL 1</span>
+                <span id="prof-xp-text">0/1000 XP</span>
+            </div>
+            <div class="xp-bg"><div id="xp-fill" class="xp-fill"></div></div>
+            <input type="text" id="name-input" placeholder="Никнейм" style="width:100%; background:#000; border:1px solid #333; color:#fff; padding:12px; border-radius:12px; margin:10px 0;">
+            <button class="btn" onclick="saveName()">СОХРАНИТЬ</button>
+        </div>
+        <p style="font-size:11px; color:var(--subtext); text-transform:uppercase;">Инвентарь</p>
+        <div id="inv-list"></div>
+    </div>
 
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBPx6V-_sE6k1_hnOkCvR8E1wOlsabVMbc",
-        authDomain: "teamplay-9f75a.firebaseapp.com",
-        databaseURL: "https://teamplay-9f75a-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "teamplay-9f75a",
-        storageBucket: "teamplay-9f75a.firebasestorage.app",
-        appId: "1:975773372092:web:0a67ef446f6c8444318ab9"
-    };
+    <div id="p-bans" class="page">
+        <h2 style="color:var(--danger)">Бан-лист ⛔</h2>
+        <div id="ban-list"></div>
+    </div>
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    <nav class="nav">
+        <a href="#" class="nav-link active" onclick="showP('home', this)"><i>🏠</i>Главная</a>
+        <a href="#" class="nav-link" onclick="showP('top', this)"><i>🏆</i>ТОП</a>
+        <a href="#" class="nav-link" onclick="showP('bans', this)"><i>⛔</i>Баны</a>
+        <a href="#" class="nav-link" onclick="showP('bonus', this)"><i>⚡</i>Бонусы</a>
+        <a href="#" class="nav-link" onclick="showP('profile', this)"><i>👤</i>Профиль</a>
+    </nav>
 
-    const uid = tg.initDataUnsafe?.user?.id || "dev_user_" + Math.floor(Math.random() * 1000);
-    const uRef = db.ref('users/' + uid);
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBPx6V-_sE6k1_hnOkCvR8E1wOlsabVMbc",
+            authDomain: "teamplay-9f75a.firebaseapp.com",
+            databaseURL: "https://teamplay-9f75a-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "teamplay-9f75a",
+            storageBucket: "teamplay-9f75a.firebasestorage.app",
+            appId: "1:975773372092:web:0a67ef446f6c8444318ab9"
+        };
 
-    // Удаление экрана загрузки
-    setTimeout(() => { document.getElementById('loader').style.display = 'none'; }, 2000);
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const tg = window.Telegram.WebApp;
+        tg.expand();
 
-    function showP(id, el) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.nav-link').forEach(n => {
-            n.classList.remove('active');
-            n.classList.remove('active-red');
-        });
-        document.getElementById('p-' + id).classList.add('active');
-        if(id === 'bans') el.classList.add('active-red'); else el.classList.add('active');
-        
-        if(id === 'top') loadTop();
-        if(id === 'bans') loadBans();
-    }
+        const uid = tg.initDataUnsafe?.user?.id || "user_test";
+        const uRef = db.ref('users/' + uid);
 
-    // Синхронизация данных
-    uRef.on('value', snap => {
-        const d = snap.val() || { balance: 0, name: tg.initDataUnsafe?.user?.first_name || "Игрок", lvl: 1 };
-        if(!snap.exists()) uRef.set(d);
-        
-        document.getElementById('h-bal').innerText = d.balance;
-        document.getElementById('h-name').innerText = d.name;
-        document.getElementById('h-lvl').innerText = "LVL " + d.lvl;
-    });
+        const prizes = [
+            {n:"1ч VIP", i:"🥈"}, {n:"3ч VIP", i:"🥈"}, {n:"500 ⭐", i:"⭐", c:500}, 
+            {n:"ПС 5", i:"🎮"}, {n:"100 ⭐", i:"⭐", c:100}
+        ];
 
-    function loadTop() {
-        db.ref('users').orderByChild('balance').limitToLast(10).once('value', s => {
-            let html = '';
-            let items = [];
-            s.forEach(c => { items.push(c.val()); });
-            items.reverse().forEach((u, i) => {
-                html += `<div class="card" style="padding:12px; display:flex; justify-content:space-between;">
-                    <span>#${i+1} ${u.name}</span><b>${u.balance} ⭐</b>
-                </div>`;
-            });
-            document.getElementById('leader-list').innerHTML = html || '<center>Топ пока пуст</center>';
-        });
-    }
+        // Синхронизация
+        uRef.on('value', snap => {
+            const d = snap.val() || { balance: 0, lvl: 1, xp: 0, name: "Игрок" };
+            if(!snap.exists()) uRef.set(d);
 
-    function loadBans() {
-        db.ref('bans').once('value', s => {
-            let html = '';
-            if(!s.exists()) {
-                document.getElementById('ban-list').innerHTML = '<center style="opacity:0.5; margin-top:20px;">Нарушителей не найдено ✨</center>';
-                return;
+            document.getElementById('h-bal').innerText = d.balance;
+            document.getElementById('h-name').innerText = d.name;
+            document.getElementById('h-lvl').innerText = "LVL " + d.lvl;
+            
+            // Профиль
+            document.getElementById('prof-lvl').innerText = "Уровень " + d.lvl;
+            let nextXp = d.lvl * 1000;
+            document.getElementById('prof-xp-text').innerText = `${d.xp}/${nextXp} XP`;
+            document.getElementById('xp-fill').style.width = (d.xp / nextXp * 100) + "%";
+
+            // Инвентарь
+            let invH = '';
+            if(d.inventory) {
+                Object.values(d.inventory).reverse().forEach(v => {
+                    invH += `<div class="card" style="padding:10px; margin-bottom:5px;">${v.icon} ${v.title}</div>`;
+                });
             }
-            s.forEach(c => {
-                const b = c.val();
-                html += `<div class="card ban-item">
-                    <div class="ban-badge">BANNED</div>
-                    <b style="font-size:16px;">${b.name || 'Пользователь'}</b>
-                    <div style="color:var(--danger); font-size:13px; margin:8px 0;">Причина: ${b.reason || 'Не указана'}</div>
-                    <div style="font-size:11px; color:var(--subtext);">Срок: ${b.expires || 'Навсегда'}</div>
-                </div>`;
+            document.getElementById('inv-list').innerHTML = invH || '<center style="opacity:0.3">Пусто</center>';
+
+            // Проверка кнопки бонуса
+            const now = Date.now();
+            const last = d.lastDaily || 0;
+            if(now - last < 86400000) {
+                document.getElementById('daily-btn').disabled = true;
+                document.getElementById('daily-btn').innerText = "ПОЛУЧЕНО";
+            } else {
+                document.getElementById('daily-btn').disabled = false;
+                document.getElementById('daily-btn').innerText = "ЗАБРАТЬ 100 ⭐";
+            }
+        });
+
+        function showP(id, el) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+            document.getElementById('p-' + id).classList.add('active');
+            el.classList.add('active');
+            if(id === 'top') loadTop();
+            if(id === 'bans') loadBans();
+        }
+
+        // --- ЛОГИКА КЕЙСА ---
+        function openCaseMenu() {
+            document.getElementById('home-main').style.display = 'none';
+            document.getElementById('case-ui').style.display = 'block';
+        }
+        function closeCaseMenu() {
+            document.getElementById('home-main').style.display = 'block';
+            document.getElementById('case-ui').style.display = 'none';
+            document.getElementById('r-box').style.display = 'none';
+        }
+
+        function startSpin() {
+            uRef.once('value', s => {
+                const d = s.val();
+                if(d.balance < 1000) return tg.showAlert("Недостаточно звезд!");
+
+                const btn = document.getElementById('spin-btn');
+                const box = document.getElementById('r-box');
+                const tape = document.getElementById('tape');
+
+                btn.disabled = true;
+                box.style.display = 'block';
+                tape.style.transition = 'none';
+                tape.style.transform = 'translateX(0)';
+
+                // Генерируем ленту
+                let list = '';
+                for(let i=0; i<40; i++) {
+                    let p = prizes[Math.floor(Math.random()*prizes.length)];
+                    list += `<div class="p-item"><div>${p.i}</div><b>${p.n}</b></div>`;
+                }
+                tape.innerHTML = list;
+
+                let win = prizes[Math.floor(Math.random()*prizes.length)];
+                setTimeout(() => {
+                    tape.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)';
+                    tape.style.transform = 'translateX(-2500px)';
+                }, 50);
+
+                setTimeout(() => {
+                    let newBal = d.balance - 1000 + (win.c || 0);
+                    let newXp = d.xp + 150;
+                    let updates = { balance: newBal, xp: newXp };
+                    if(!win.c) uRef.child('inventory').push({title: win.n, icon: win.i});
+                    uRef.update(updates);
+                    db.ref('logs').push({name: d.name, prize: win.n});
+                    tg.showAlert("Выпало: " + win.n);
+                    btn.disabled = false;
+                }, 4500);
             });
-            document.getElementById('ban-list').innerHTML = html;
-        });
-    }
+        }
 
-    function saveName() {
-        const n = document.getElementById('name-input').value;
-        if(n) uRef.update({ name: n }).then(() => tg.showAlert("Ник обновлен!"));
-    }
+        // --- ОСТАЛЬНОЕ ---
+        function claimDaily() {
+            uRef.once('value', s => {
+                const d = s.val();
+                uRef.update({ balance: d.balance + 100, lastDaily: Date.now() });
+                tg.showAlert("Бонус получен!");
+            });
+        }
 
-    function claimDaily() {
-        uRef.once('value', s => {
-            const bal = s.val().balance || 0;
-            uRef.update({ balance: bal + 100 });
-            tg.showAlert("Вы получили 100 ⭐!");
+        function saveName() {
+            const val = document.getElementById('name-input').value;
+            if(val) uRef.update({ name: val }).then(() => tg.showAlert("Ник сохранен!"));
+        }
+
+        function loadTop() {
+            db.ref('users').orderByChild('balance').limitToLast(10).once('value', s => {
+                let h = '';
+                let a = [];
+                s.forEach(c => { a.push(c.val()); });
+                a.reverse().forEach((u, i) => {
+                    h += `<div class="card" style="padding:10px; display:flex; justify-content:space-between;">
+                        <span>#${i+1} ${u.name}</span><b>${u.balance} ⭐</b>
+                    </div>`;
+                });
+                document.getElementById('leader-list').innerHTML = h;
+            });
+        }
+
+        function loadBans() {
+            db.ref('bans').once('value', s => {
+                let h = '';
+                s.forEach(c => {
+                    let b = c.val();
+                    h += `<div class="card" style="border-left:4px solid var(--danger)">
+                        <b>${b.name}</b><br><small>${b.reason}</small>
+                    </div>`;
+                });
+                document.getElementById('ban-list').innerHTML = h || '<center>Нет банов</center>';
+            });
+        }
+
+        db.ref('logs').limitToLast(5).on('value', s => {
+            let h = '';
+            s.forEach(l => { h = `<div>${l.val().name} — ${l.val().prize}</div>` + h; });
+            document.getElementById('global-logs').innerHTML = h;
         });
-    }
-</script>
+    </script>
 </body>
 </html>
